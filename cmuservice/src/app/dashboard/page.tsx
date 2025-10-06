@@ -6,7 +6,7 @@ export default function DashboardPage() {
     <div>
       <h1 className="text-3xl font-bold">Overview</h1>
       <p className="text-muted-foreground mt-2">
-        Here's a summary of your activity on the platform.
+        Here&apos;s a summary of your activity on the platform.
       </p>
 
       <div className="grid gap-6 mt-8 md:grid-cols-2 lg:grid-cols-3">
