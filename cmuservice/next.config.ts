@@ -1,18 +1,17 @@
-// next.config.ts
+// next.config.js
 
-import type { NextConfig } from 'next';
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
+        // Paste your Supabase project's hostname here
+        hostname: 'kmsiawreljpswyazkjbh.supabase.co', 
+        // Example: hostname: 'kmsiawrelpowyackjqh.supabase.co',
       },
     ],
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
