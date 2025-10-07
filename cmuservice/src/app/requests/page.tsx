@@ -6,6 +6,15 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+// Define a type for your 'requests' table data
+type Request = {
+  id: string;
+  user_id: string;
+  title: string;
+  budget: number;
+  description: string | null;
+};
+
 export default async function BrowseRequestsPage({ 
     searchParams 
 }: { 
@@ -15,26 +24,28 @@ export default async function BrowseRequestsPage({
   const { data: { user } } = await supabase.auth.getUser();
   const searchQuery = searchParams.q || '';
 
-  let requests;
+  // Apply the new type to your 'requests' variable
+  let requests: Request[] | null;
   let error;
 
   if (searchQuery) {
-    // If there is a search query, call the database function
     ({ data: requests, error } = await supabase
       .rpc('search_requests', { search_term: searchQuery }));
   } else {
-    // If there is no search, just get all requests
     ({ data: requests, error } = await supabase
       .from('requests')
       .select('*'));
   }
 
-  // Exclude the user's own requests from the final results
   if (user && requests) {
+    // TypeScript now knows that 'request' is of type 'Request'
     requests = requests.filter(request => request.user_id !== user.id);
   }
 
-  if (error) { /* ... error handling ... */ }
+  if (error) {
+    console.error("Error fetching requests:", error);
+    return <p>Sorry, something went wrong. Please try again later.</p>;
+  }
   
   return (
     <div className="container mx-auto p-4">
@@ -44,7 +55,7 @@ export default async function BrowseRequestsPage({
       </p>
 
       <form className="mb-8 flex gap-2">
-        <Input name="q" placeholder="Search for a request..." defaultValue={searchQuery} />
+        <Input name="q" placeholder="Search by title or description..." defaultValue={searchQuery} />
         <Button type="submit">Search</Button>
       </form>
       

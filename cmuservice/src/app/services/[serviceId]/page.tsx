@@ -58,7 +58,7 @@ export default async function ServiceDetailPage({ params }: { params: { serviceI
                         <p className="text-2xl font-bold">Starting at ${service.price}</p>
                         <div className="mt-6">
                             {isOwner ? ( <Button size="lg" className="w-full" asChild><Link href={`/dashboard/my-services/edit/${service.id}`}><Edit className="mr-2 h-5 w-5" />Edit Service</Link></Button>
-                            ) : ( <Button size="lg" className="w-full">Order Now</Button> )}
+                            ) : ( <Button size="lg" className="w-full" asChild><Link href={`/checkout/${service.id}`}>Order Now</Link></Button> )}
                         </div>
                     </div>
                 </div>

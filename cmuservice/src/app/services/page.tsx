@@ -6,6 +6,16 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+// Define a type that matches the shape of your 'services' table data
+type Service = {
+  id: string;
+  user_id: string;
+  title: string;
+  price: number;
+  image_url: string | null;
+  // Add other fields from your table here if needed
+};
+
 export default async function BrowseServicesPage({ 
     searchParams 
 }: { 
@@ -15,27 +25,29 @@ export default async function BrowseServicesPage({
   const { data: { user } } = await supabase.auth.getUser();
   const searchQuery = searchParams.q || '';
 
-  let services;
+  // Apply the new type to your 'services' variable
+  let services: Service[] | null;
   let error;
 
   if (searchQuery) {
-    // If there is a search query, call the database function
     ({ data: services, error } = await supabase
       .rpc('search_services', { search_term: searchQuery }));
   } else {
-    // If there is no search, just get all services
     ({ data: services, error } = await supabase
       .from('services')
       .select('*'));
   }
-
-  // Exclude the user's own services from the final results
+  
   if (user && services) {
+    // TypeScript now knows that 'service' is of type 'Service'
     services = services.filter(service => service.user_id !== user.id);
   }
 
-  if (error) { /* ... error handling ... */ }
-
+  if (error) {
+    console.error("Error fetching services:", error);
+    return <p>Sorry, something went wrong. Please try again later.</p>;
+  }
+  
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold">Browse Services</h1>

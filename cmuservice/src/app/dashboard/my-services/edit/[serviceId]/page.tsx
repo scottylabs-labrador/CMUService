@@ -21,18 +21,13 @@ export default function EditServicePage() {
     const params = useParams();
     const serviceId = params.serviceId as string;
 
-    // State for the confirmation dialog
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
-    // State for form fields
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
     const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
     const [newImageFile, setNewImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-    // General component state
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,7 +63,6 @@ export default function EditServicePage() {
             setPrice(service.price.toString());
             setCurrentImageUrl(service.image_url);
             setImagePreview(service.image_url);
-
             setLoading(false);
         };
 
@@ -172,7 +166,6 @@ export default function EditServicePage() {
                 title="Are you absolutely sure?"
                 description="This action cannot be undone. This will permanently delete your service and its image."
             />
-
             <div>
                 <Link href="/dashboard/my-services" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-8">
                     <ChevronLeft className="mr-2 h-4 w-4" />
@@ -188,7 +181,7 @@ export default function EditServicePage() {
                         <Input id="service-image" type="file" onChange={handleFileChange} accept="image/*" />
                         {imagePreview && (
                             <div className="mt-4 relative w-72 h-40 rounded-md overflow-hidden">
-                                <Image src={imagePreview} alt="Service image preview" fill className="object-cover" />
+                                <Image src={imagePreview} alt="Service image preview" fill className="object-cover" unoptimized />
                             </div>
                         )}
                     </div>

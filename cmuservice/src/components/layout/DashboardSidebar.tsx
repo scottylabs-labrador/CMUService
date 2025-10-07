@@ -1,14 +1,16 @@
-//src/components/layout/DashboardSidebar.tsx
+// src/components/layout/DashboardSidebar.tsx
 
 'use client';
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, ShoppingBag, FolderKanban, Settings } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, FolderKanban, Settings, DollarSign, ShoppingCart } from "lucide-react";
 
 const navItems = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+    { href: "/dashboard/selling", label: "Selling", icon: DollarSign }, // New "Selling" link
+    { href: "/dashboard/buying", label: "Buying", icon: ShoppingCart }, // New "Buying" link
     { href: "/dashboard/my-services", label: "My Services", icon: ShoppingBag },
     { href: "/dashboard/my-requests", label: "My Requests", icon: FolderKanban },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
@@ -37,4 +39,3 @@ export function DashboardSidebar() {
         </aside>
     );
 }
-

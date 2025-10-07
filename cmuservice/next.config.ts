@@ -1,14 +1,19 @@
-// next.config.js
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Use the 'experimental' block for Next.js 14
+  experimental: {
+    ppr: false,
+  },
+  
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        // Paste your Supabase project's hostname here
-        hostname: 'kmsiawreljpswyazkjbh.supabase.co', 
-        // Example: hostname: 'kmsiawrelpowyackjqh.supabase.co',
+        hostname: 'kmsiawreljpswyazkjbh.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
       },
     ],
   },
