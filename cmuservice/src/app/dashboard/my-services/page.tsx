@@ -2,28 +2,23 @@
 
 import { ServiceCard } from "@/components/ServiceCard";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/utils/supabase/server"; // Import the new server client
-// No longer need to import 'cookies' here
+import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-// 2. Make the component async
 export default async function MyServicesPage() {
     const supabase = createClient();
 
-    // 3. Get the current user
     const { data: { user } } = await supabase.auth.getUser();
 
-    // 4. If no user is logged in, redirect to the login page
     if (!user) {
         return redirect('/login');
     }
 
-    // 5. Fetch services where 'user_id' matches the current user's ID
     const { data: services, error } = await supabase
         .from('services')
         .select('*')
-        .eq('user_id', user.id); // The important filter!
+        .eq('user_id', user.id);
 
     if (error) {
         console.error("Error fetching services:", error);
@@ -43,7 +38,6 @@ export default async function MyServicesPage() {
                 </Button>
             </div>
 
-            {/* 6. Display the services if they exist, otherwise show an empty state */}
             {services && services.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {services.map((service) => (
@@ -51,8 +45,9 @@ export default async function MyServicesPage() {
                             <ServiceCard
                                 title={service.title}
                                 price={service.price}
-                                sellerName={user.email || "Your Listing"} // We can use the user's email for now
-                                imageUrl="https://placehold.co/600x400/e0e7ff/4338ca?text=Service"
+                                sellerName={user.email || "Your Listing"}
+                                // Use the real image_url, or fall back to the placeholder
+                                imageUrl={service.image_url || "https://placehold.co/600x400/e0e7ff/4338ca?text=Service"}
                             />
                         </Link>
                     ))}
