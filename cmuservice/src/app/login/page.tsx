@@ -4,22 +4,21 @@
 
 import { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/utils/supabase/client'; // Use the new client-side client
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import Link from 'next/link';
 
 export default function LoginPage() {
+    const supabase = createClient(); // Create client instance here
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
     const { isLoggedIn } = useAuth();
 
-    // If the user is already logged in, redirect them to the dashboard
     useEffect(() => {
         if (isLoggedIn) {
             router.push('/dashboard');
@@ -38,12 +37,11 @@ export default function LoginPage() {
         if (signInError) {
             setError(signInError.message);
         } else {
-            // The onAuthStateChange listener in AuthContext will handle the redirect
-            // after the user state is updated. We can also push manually here.
             router.push('/dashboard');
+            router.refresh(); // Refresh the page to ensure server components reload
         }
     };
-
+    // ... rest of the component (form JSX is the same)
     return (
         <div className="flex items-center justify-center min-h-screen">
             <Card className="w-full max-w-sm">

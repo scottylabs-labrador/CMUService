@@ -1,19 +1,20 @@
-// app/requests/[requestId]/page.tsx
+// src/app/requests/[requestId]/page.tsx
 
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-// This is a Server Component that receives 'params' from the URL
 export default async function RequestDetailPage({ params }: { params: { requestId: string } }) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
 
-  // Fetch a single request where the 'id' column matches params.requestId
   const { data: request, error } = await supabase
     .from('requests')
     .select('*')
-    .eq('id', params.requestId) // Find the row where 'id' is equal to the URL's id
-    .single(); // We expect only one result
+    .eq('id', params.requestId)
+    .single();
 
   if (error || !request) {
     return (
@@ -38,7 +39,6 @@ export default async function RequestDetailPage({ params }: { params: { requestI
             </Link>
         </Button>
 
-      {/* We'll fetch the real buyer's name in a future step */}
       <p className="text-sm text-muted-foreground">Posted by A CMU Student</p>
       <h1 className="text-4xl font-bold mt-2">{request.title}</h1>
       <p className="text-3xl font-bold mt-6">Budget: ${request.budget}</p>
