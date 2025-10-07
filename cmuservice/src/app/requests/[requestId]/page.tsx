@@ -1,14 +1,13 @@
 // src/app/requests/[requestId]/page.tsx
 
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
 export default async function RequestDetailPage({ params }: { params: { requestId: string } }) {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  // Correctly create the client with zero arguments
+  const supabase = createClient();
 
   const { data: request, error } = await supabase
     .from('requests')

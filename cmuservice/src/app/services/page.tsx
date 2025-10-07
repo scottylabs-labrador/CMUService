@@ -1,13 +1,11 @@
 // src/app/services/page.tsx
 
 import { ServiceCard } from "@/components/ServiceCard";
-import { createClient } from "@/utils/supabase/server"; // Use the new server client
-import { cookies } from "next/headers"; // Import cookies
+import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 
 export default async function BrowseServicesPage() {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore); // Create the server client
+  const supabase = createClient();
 
   const { data: services, error } = await supabase
     .from('services')

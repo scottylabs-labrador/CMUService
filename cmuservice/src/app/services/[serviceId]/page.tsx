@@ -1,52 +1,62 @@
-// src/app/services/page.tsx
+// src/app/services/[serviceId]/page.tsx
 
-import { ServiceCard } from "@/components/ServiceCard";
-import { createClient } from "@/utils/supabase/server"; // Use the new server client
-import { cookies } from "next/headers"; // Import cookies
+import { createClient } from "@/utils/supabase/server";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
-export default async function BrowseServicesPage() {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore); // Create the server client
+export default async function ServiceDetailPage({ params }: { params: { serviceId: string } }) {
+  const supabase = createClient();
 
-  const { data: services, error } = await supabase
+  const { data: service, error } = await supabase
     .from('services')
-    .select('*');
+    .select('*')
+    .eq('id', params.serviceId)
+    .single();
 
-  if (error) {
-    console.error("Error fetching services:", error);
-    return <p>Sorry, something went wrong. Please try again later.</p>;
-  }
-  
-  if (!services || services.length === 0) {
+  if (error || !service) {
     return (
       <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold">Browse Services</h1>
-        <p className="mt-2 text-muted-foreground mb-8">
-          No services have been listed yet. Be the first!
-        </p>
+        <Button asChild variant="outline" className="mb-8">
+            <Link href="/services">
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to Services
+            </Link>
+        </Button>
+        <h1 className="text-3xl font-bold">Service not found</h1>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold">Browse Services</h1>
-      <p className="mt-2 text-muted-foreground mb-8">
-        Here you'll see a list of all the amazing services offered by CMU students.
-      </p>
+        <Button asChild variant="outline" className="mb-8">
+            <Link href="/services">
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to Services
+            </Link>
+        </Button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {services.map((service) => (
-          <Link href={`/services/${service.id}`} key={service.id}>
-            <ServiceCard 
-              title={service.title}
-              price={service.price}
-              sellerName="A CMU Student" 
-              imageUrl="https://placehold.co/600x400/e0e7ff/4338ca?text=Service"
-            />
-          </Link>
-        ))}
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="aspect-video relative rounded-lg overflow-hidden">
+          <Image
+            src={"https://placehold.co/600x400/e0e7ff/4338ca?text=Service"}
+            alt={service.title}
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        </div>
+
+        <div>
+          <h1 className="text-4xl font-bold">{service.title}</h1>
+          <p className="text-lg text-muted-foreground mt-2">by A CMU Student</p> 
+          <p className="text-3xl font-bold mt-6">Starting at ${service.price}</p>
+          <Button size="lg" className="mt-8">
+            Order Now
+          </Button>
+        </div>
       </div>
     </div>
   );

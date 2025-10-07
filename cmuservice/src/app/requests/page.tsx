@@ -2,12 +2,10 @@
 
 import { RequestCard } from "@/components/RequestCard";
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import Link from "next/link";
 
 export default async function BrowseRequestsPage() {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = createClient();
 
   const { data: requests, error } = await supabase
     .from('requests')
