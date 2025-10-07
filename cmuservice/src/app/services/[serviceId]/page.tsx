@@ -1,26 +1,31 @@
-// src/app/services/[serviceId]/page.tsx
+// app/services/[serviceId]/page.tsx
 
-'use client';
-
-import { mockServices } from "@/lib/mockData";
+import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useRouter, useParams } from 'next/navigation'; // 👈 1. Import useParams
+import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-// 👇 2. Remove params from the function signature
-export default function ServiceDetailPage() {
-  const router = useRouter(); 
-  const params = useParams(); // 👈 3. Get params using the hook
+// This is a Server Component, so we can fetch data directly
+// It receives 'params' which contains the dynamic part of the URL
+export default async function ServiceDetailPage({ params }: { params: { serviceId: string } }) {
 
-  // 👇 4. Access the id from the params object
-  const service = mockServices.find(
-    (s) => s.id === parseInt(params.serviceId as string)
-  );
+  // Fetch a single service where the 'id' column matches params.serviceId
+  const { data: service, error } = await supabase
+    .from('services')
+    .select('*')
+    .eq('id', params.serviceId) // Find the row where 'id' is equal to the URL's id
+    .single(); // We expect only one result
 
-  if (!service) {
+  if (error || !service) {
     return (
       <div className="container mx-auto p-4">
+        <Button asChild variant="outline" className="mb-8">
+            <Link href="/services">
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to Services
+            </Link>
+        </Button>
         <h1 className="text-3xl font-bold">Service not found</h1>
       </div>
     );
@@ -28,15 +33,18 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <Button variant="outline" onClick={() => router.back()} className="mb-8">
-        <ChevronLeft className="mr-2 h-4 w-4" />
-        Back to Services
-      </Button>
+        <Button asChild variant="outline" className="mb-8">
+            <Link href="/services">
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to Services
+            </Link>
+        </Button>
 
       <div className="grid md:grid-cols-2 gap-8">
         <div className="aspect-video relative rounded-lg overflow-hidden">
           <Image
-            src={service.imageUrl}
+            // We'll add a real image upload feature later
+            src={"https://placehold.co/600x400/e0e7ff/4338ca?text=Service"}
             alt={service.title}
             fill
             className="object-cover"
@@ -46,7 +54,8 @@ export default function ServiceDetailPage() {
 
         <div>
           <h1 className="text-4xl font-bold">{service.title}</h1>
-          <p className="text-lg text-muted-foreground mt-2">by {service.sellerName}</p>
+          {/* We'll fetch the real seller's name in a future step */}
+          <p className="text-lg text-muted-foreground mt-2">by A CMU Student</p> 
           <p className="text-3xl font-bold mt-6">Starting at ${service.price}</p>
           <Button size="lg" className="mt-8">
             Order Now

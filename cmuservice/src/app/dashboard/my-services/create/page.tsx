@@ -1,3 +1,5 @@
+// app/dashboard/my-services/create/page.tsx
+
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -6,21 +8,52 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, FormEvent } from "react";
+import { supabase } from "@/lib/supabaseClient"; // Import the Supabase client
 
 export default function CreateServicePage() {
+    const router = useRouter(); // To redirect the user after success
+
+    // Use state to hold the value of each form input
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
+    const [error, setError] = useState<string | null>(null);
 
-    const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        let value = event.target.value;
+    // This function will run when the user submits the form
+    const handleSubmit = async (event: FormEvent) => {
+        event.preventDefault(); // Prevent the browser from reloading the page
+        setError(null); // Clear any previous errors
 
-        // This regex checks if the number has more than two decimal places
-        if (value.match(/\.\d{3,}/)) {
-            // If it does, it truncates it to two decimal places
-            value = parseFloat(value).toFixed(2);
+        // 1. Get the current logged-in user
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            setError("You must be logged in to create a service.");
+            return;
+        }
+        
+        if (!title || !price) {
+            setError("Title and Price are required.");
+            return;
         }
 
-        setPrice(value);
+        // 2. Insert the data into the 'services' table
+        const { error: insertError } = await supabase.from('services').insert({
+            title: title,
+            description: description,
+            price: parseFloat(price),
+            user_id: user.id // Associate the service with the logged-in user
+        });
+
+        if (insertError) {
+            setError(insertError.message); // Show an error if the insert fails
+            console.error("Error inserting data:", insertError);
+        } else {
+            // 3. If successful, redirect the user back to their services page
+            router.push("/dashboard/my-services");
+        }
     };
 
     return (
@@ -38,14 +71,25 @@ export default function CreateServicePage() {
                 Fill out the form below to list a new service you are offering.
             </p>
 
-            <form className="mt-8 space-y-6">
+            {/* Attach the handleSubmit function to the form's onSubmit event */}
+            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="title">Service Title</Label>
-                    <Input id="title" placeholder="e.g., I will proofread your essay" />
+                    <Input
+                        id="title"
+                        placeholder="e.g., I will proofread your essay"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)} // Update title state
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" placeholder="Describe your service in detail..." />
+                    <Textarea
+                        id="description"
+                        placeholder="Describe your service in detail..."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)} // Update description state
+                    />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="price">Starting Price ($)</Label>
@@ -55,14 +99,16 @@ export default function CreateServicePage() {
                         placeholder="e.g., 25"
                         min="0"
                         step="0.01"
-                        onKeyDown={(evt) => ["e", "E", "+", "-"].includes(evt.key) && evt.preventDefault()}
                         value={price}
-                        onChange={handlePriceChange}
+                        onChange={(e) => setPrice(e.target.value)} // Update price state
                     />
                 </div>
+
+                {/* Display an error message if something goes wrong */}
+                {error && <p className="text-red-600">{error}</p>}
+
                 <Button type="submit">Create Service</Button>
             </form>
         </div>
     );
 }
-

@@ -1,3 +1,5 @@
+// app/dashboard/page.tsx
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ListOrdered, PlusCircle, Activity } from "lucide-react";
 

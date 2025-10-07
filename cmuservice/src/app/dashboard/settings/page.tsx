@@ -1,3 +1,5 @@
+// app/dashboard/settings/page.tsx
+
 'use client'; // Required for user interaction and state
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
