@@ -60,19 +60,10 @@ export default function OrderPage() {
                 setError("Order not found or you do not have permission to view it.");
                 setLoading(false);
                 return;
-            } else {
-                setOrder(orderData as OrderWithService);
-
-                // --- ADDED DEBUGGING BLOCK ---
-                console.log("--- RLS DEBUG ---");
-                console.log("Current Logged-in User ID:", user.id);
-                console.log("Fetched Order's Buyer ID:", orderData.buyer_id);
-                console.log("Fetched Order's Seller ID:", orderData.seller_id);
-                console.log("Is user the seller?", user.id === orderData.seller_id);
-                console.log("-------------------");
-                // --- END DEBUGGING BLOCK ---
             }
             
+            setOrder(orderData as OrderWithService);
+
             if (orderData.status !== 'awaiting_requirements') {
                 const { data: reqData, error: reqError } = await supabase
                     .from('order_requirements')
@@ -93,13 +84,8 @@ export default function OrderPage() {
         fetchData();
     }, [orderId, router, supabase]);
 
-    if (loading) {
-        return <div className="p-4 container mx-auto">Loading order details...</div>;
-    }
-
-    if (error || !order || !user) {
-        return <div className="p-4 container mx-auto">{error || "Could not load order details."}</div>;
-    }
+    if (loading) { return <div className="p-4 container mx-auto">Loading order details...</div>; }
+    if (error || !order || !user) { return <div className="p-4 container mx-auto">{error || "Could not load order details."}</div>; }
 
     const backPath = user.id === order.buyer_id ? '/dashboard/buying' : '/dashboard/selling';
 
@@ -146,10 +132,15 @@ export default function OrderPage() {
                 </Card>
             )}
 
-            {order.status === 'awaiting_requirements' ? (
-                <OrderActions order={order} user={user} />
-            ) : (
-                <OrderChat orderId={order.id} user={user} />
+            {/* --- THIS IS THE FIX --- */}
+            {/* The OrderActions component will show the correct buttons for the current user and status */}
+            <OrderActions order={order} user={user} />
+
+            {/* The chat is shown once the order is no longer awaiting requirements */}
+            {order.status !== 'awaiting_requirements' && (
+                <div className="mt-6">
+                    <OrderChat orderId={order.id} user={user} />
+                </div>
             )}
         </div>
     );

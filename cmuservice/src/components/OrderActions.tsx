@@ -23,16 +23,19 @@ interface OrderActionsProps {
 }
 
 export function OrderActions({ order, user }: OrderActionsProps) {
+    // --- ADD THIS DEBUGGING BLOCK ---
+    console.log("--- OrderActions Component ---");
+    console.log("Received Order Status:", order.status);
+    console.log("Is User the Buyer?", user.id === order.buyer_id);
+    console.log("Is Status 'in_progress'?", order.status === 'in_progress');
+    console.log("----------------------------");
+    // --- END DEBUGGING BLOCK ---
     const supabase = createClient();
     const router = useRouter();
     const [requirements, setRequirements] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCanceling, setIsCanceling] = useState(false);
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-
-    console.log("--- Checking Ownership ---");
-    console.log("Logged-in User ID:", user.id);
-    console.log("Order's Buyer ID: ", order.buyer_id);
 
     const isBuyer = user.id === order.buyer_id;
 
@@ -43,13 +46,9 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         }
         setIsSubmitting(true);
 
-        // Step 1: Insert the requirements into the new table
         const { error: reqError } = await supabase
             .from('order_requirements')
-            .insert({
-                order_id: order.id,
-                requirements_text: requirements,
-            });
+            .insert({ order_id: order.id, requirements_text: requirements });
 
         if (reqError) {
             alert("Failed to submit requirements: " + reqError.message);
@@ -57,7 +56,6 @@ export function OrderActions({ order, user }: OrderActionsProps) {
             return;
         }
 
-        // Step 2: Update the order status to 'in_progress'
         const { error: orderUpdateError } = await supabase
             .from('orders')
             .update({ status: 'in_progress' })
@@ -66,7 +64,6 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         if (orderUpdateError) {
             alert("Failed to update order status: " + orderUpdateError.message);
         } else {
-            // Refresh the page to show the new status and hide the form
             router.refresh();
         }
         setIsSubmitting(false);
@@ -74,38 +71,40 @@ export function OrderActions({ order, user }: OrderActionsProps) {
 
     const handleCancelOrder = async () => {
         setIsCanceling(true);
-        
-        const { error } = await supabase
-            .from('orders')
-            .delete()
-            .eq('id', order.id);
-
+        const { error } = await supabase.from('orders').delete().eq('id', order.id);
         if (error) {
             alert("Failed to cancel order: " + error.message);
         } else {
-            router.push('/dashboard/buying'); // Redirect to buying dashboard after cancel
+            router.push('/dashboard/buying');
         }
         setIsCanceling(false);
         setIsCancelDialogOpen(false);
     };
 
-    // Only the buyer can see these actions
-    if (!isBuyer) {
-        return null;
-    }
+    const handleDeliverOrder = async () => {
+        const { error } = await supabase.from('orders').update({ status: 'delivered' }).eq('id', order.id);
+        if (error) alert("Error delivering order: " + error.message);
+        else router.refresh();
+    };
 
-    return (
-        <>
-            <ConfirmationDialog
-                isOpen={isCancelDialogOpen}
-                onClose={() => setIsCancelDialogOpen(false)}
-                onConfirm={handleCancelOrder}
-                title="Are you sure you want to cancel?"
-                description="This action cannot be undone. This will permanently cancel this order."
-            />
-        
-            {/* Show requirements form only if status is 'awaiting_requirements' */}
-            {order.status === 'awaiting_requirements' && (
+    const handleCompleteOrder = async () => {
+        const { error } = await supabase.from('orders').update({ status: 'completed' }).eq('id', order.id);
+        if (error) alert("Error completing order: " + error.message);
+        else router.push(`/review/${order.id}`);
+    };
+
+    // Buyer's view when requirements are needed
+    if (isBuyer && order.status === 'awaiting_requirements') {
+        return (
+            <>
+                <ConfirmationDialog
+                    isOpen={isCancelDialogOpen}
+                    onClose={() => setIsCancelDialogOpen(false)}
+                    onConfirm={handleCancelOrder}
+                    title="Are you sure you want to cancel?"
+                    description="This action cannot be undone. This will permanently cancel this order."
+                />
+            
                 <Card className="mb-6">
                     <CardHeader><CardTitle>Submit Requirements</CardTitle></CardHeader>
                     <CardContent>
@@ -124,10 +123,7 @@ export function OrderActions({ order, user }: OrderActionsProps) {
                         </Button>
                     </CardContent>
                 </Card>
-            )}
 
-            {/* Allow canceling only before the work is in progress */}
-            {order.status === 'awaiting_requirements' && (
                 <div className="mt-8">
                      <Button 
                         variant="destructive" 
@@ -137,7 +133,38 @@ export function OrderActions({ order, user }: OrderActionsProps) {
                         {isCanceling ? 'Canceling...' : 'Cancel Order'}
                     </Button>
                 </div>
-            )}
-        </>
-    );
+            </>
+        );
+    }
+
+    // Seller's view when the order is in progress
+    if (!isBuyer && order.status === 'in_progress') {
+        return (
+            <Card>
+                <CardHeader><CardTitle>Deliver Your Work</CardTitle></CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground mb-4">Once you have completed the work, click the button below to deliver it to the buyer.</p>
+                    <Button onClick={handleDeliverOrder}>Deliver Work</Button>
+                </CardContent>
+            </Card>
+        );
+    }
+    
+    // Buyer's view when the order has been delivered
+    if (isBuyer && order.status === 'delivered') {
+        return (
+            <Card>
+                <CardHeader><CardTitle>Order Delivered</CardTitle></CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground mb-4">The seller has delivered your order. Please review the work and either accept it or request a revision.</p>
+                    <div className="flex gap-4">
+                        <Button onClick={handleCompleteOrder}>Accept & Complete</Button>
+                        <Button variant="outline">Request Revision</Button>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return null; // Return nothing if no specific actions are available for the current user/status
 }
