@@ -16,6 +16,7 @@ type Order = {
     id: string;
     status: string;
     buyer_id: string;
+    seller_id: string;
 };
 
 interface OrderActionsProps {
@@ -49,6 +50,11 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         const { error: orderUpdateError } = await supabase.from('orders').update({ status: 'in_progress' }).eq('id', order.id);
         if (orderUpdateError) {
             alert("Failed to update order status: " + orderUpdateError.message);
+        } else {
+            const { error: notificationError } = await supabase.from('notifications').insert({ recipient_id: order.seller_id, order_id: order.id, notification_type: 'requirements_submitted', content: 'The buyer has submitted the requirements' });
+            if (notificationError) {
+                console.error("!!! Error creating 'requirements_submitted' notification:", notificationError);
+            }
         }
         setIsSubmitting(false);
     };
@@ -70,10 +76,13 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         if (error) {
             alert("Error delivering order: " + error.message);
         } else {
-            const messageText = order.status === 'in_revision'
-                ? 'The seller has delivered the revised work.'
-                : 'The seller has delivered the order.';
+            const messageText = order.status === 'in_revision' ? 'The seller has delivered the revised work.' : 'The seller has delivered the order.';
             await supabase.from('messages').insert({ order_id: order.id, sender_id: user.id, message_text: messageText, message_type: 'event_delivered' });
+            
+            const { error: notificationError } = await supabase.from('notifications').insert({ recipient_id: order.buyer_id, order_id: order.id, notification_type: 'order_delivered', content: 'Your order has been delivered' });
+            if (notificationError) {
+                console.error("!!! Error creating 'order_delivered' notification:", notificationError);
+            }
         }
     };
 
@@ -94,10 +103,14 @@ export function OrderActions({ order, user }: OrderActionsProps) {
             return;
         }
         await supabase.from('messages').insert({ order_id: order.id, sender_id: user.id, message_text: `Revision requested: "${comment}"`, message_type: 'event_revision_request' });
+        
+        const { error: notificationError } = await supabase.from('notifications').insert({ recipient_id: order.seller_id, order_id: order.id, notification_type: 'revision_requested', content: 'The buyer has requested a revision' });
+        if (notificationError) {
+            console.error("!!! Error creating 'revision_requested' notification:", notificationError);
+        }
         setIsRevisionDialogOpen(false);
     };
 
-    // Buyer's view when requirements are needed
     if (isBuyer && order.status === 'awaiting_requirements') {
         return (
             <>
@@ -117,28 +130,18 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         );
     }
 
-    // Seller's view when the order is in progress or revision
     if (!isBuyer && (order.status === 'in_progress' || order.status === 'in_revision')) {
         return (
             <Card>
-                <CardHeader>
-                    <CardTitle>{order.status === 'in_revision' ? 'Deliver Revised Work' : 'Deliver Your Work'}</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>{order.status === 'in_revision' ? 'Deliver Revised Work' : 'Deliver Your Work'}</CardTitle></CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground mb-4">
-                        {order.status === 'in_revision'
-                            ? "The buyer has requested revisions. When you have completed the changes, deliver the work again."
-                            : "You have received the requirements. When you have completed the work, click the button below to deliver it to the buyer."
-                        }
-                    </p>
+                    <p className="text-muted-foreground mb-4">{order.status === 'in_revision' ? "The buyer has requested revisions. When you have completed the changes, deliver the work again." : "You have received the requirements. When you have completed the work, click the button below to deliver it to the buyer."}</p>
                     <Button onClick={handleDeliverOrder}>{order.status === 'in_revision' ? 'Deliver Again' : 'Deliver Work'}</Button>
                 </CardContent>
             </Card>
         );
     }
-    
-    // --- NEW SECTION FOR SELLER ---
-    // Seller's view when waiting for buyer's acceptance
+
     if (!isBuyer && order.status === 'delivered') {
         return (
             <Card>
@@ -150,34 +153,23 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         );
     }
 
-    // Buyer's view when the order has been delivered
-    if (isBuyer && order.status === 'delivered') {
+    if (isBuyer && (order.status === 'delivered' || order.status === 'in_revision')) {
         return (
             <>
                 <RevisionRequestDialog isOpen={isRevisionDialogOpen} onClose={() => setIsRevisionDialogOpen(false)} onSubmit={handleRequestRevision} />
                 <Card>
-                    <CardHeader><CardTitle>Order Delivered</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{order.status === 'delivered' ? 'Order Delivered' : 'Revision in Progress'}</CardTitle></CardHeader>
                     <CardContent>
-                        <p className="text-muted-foreground mb-4">The seller has delivered your order. Please review the work and either accept it or request a revision.</p>
-                        <div className="flex gap-4">
-                            <Button onClick={handleCompleteOrder}>Accept & Complete</Button>
-                            <Button variant="outline" onClick={() => setIsRevisionDialogOpen(true)}>Request Revision</Button>
-                        </div>
+                        <p className="text-muted-foreground mb-4">{order.status === 'delivered' ? "The seller has delivered your order. Please review the work and either accept it or request a revision." : "The seller is working on your requested revisions. You will be notified when they deliver again."}</p>
+                        {order.status === 'delivered' && (
+                            <div className="flex gap-4">
+                                <Button onClick={handleCompleteOrder}>Accept & Complete</Button>
+                                <Button variant="outline" onClick={() => setIsRevisionDialogOpen(true)}>Request Revision</Button>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </>
-        );
-    }
-
-    // Buyer's view when the order is IN REVISION (no action buttons)
-    if (isBuyer && order.status === 'in_revision') {
-        return (
-            <Card>
-                <CardHeader><CardTitle>Revision in Progress</CardTitle></CardHeader>
-                <CardContent>
-                    <p className="text-muted-foreground">The seller is working on your requested changes. You will be notified when they deliver again.</p>
-                </CardContent>
-            </Card>
         );
     }
 
