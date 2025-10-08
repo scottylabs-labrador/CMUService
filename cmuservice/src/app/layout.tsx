@@ -6,6 +6,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/context/AuthContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,11 +27,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} antialiased`}>
         <AuthProvider>
-          <Navbar />
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <Footer />
+          <NotificationProvider>
+            <Navbar />
+              <main className="min-h-screen">
+                {children}
+              </main>
+            <Footer />
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>
