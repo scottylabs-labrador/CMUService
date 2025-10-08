@@ -84,8 +84,38 @@ export default function OrderPage() {
         fetchData();
     }, [orderId, router, supabase]);
 
-    if (loading) { return <div className="p-4 container mx-auto">Loading order details...</div>; }
-    if (error || !order || !user) { return <div className="p-4 container mx-auto">{error || "Could not load order details."}</div>; }
+    useEffect(() => {
+        if (!orderId) return;
+
+        const channel = supabase
+            .channel(`orders:${orderId}`)
+            .on(
+                'postgres_changes',
+                { 
+                    event: 'UPDATE', 
+                    schema: 'public', 
+                    table: 'orders', 
+                    filter: `id=eq.${orderId}` 
+                },
+                (payload) => {
+                    // When an update is received, merge it with existing data
+                    setOrder(prevOrder => ({ ...prevOrder, ...payload.new } as OrderWithService));
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [supabase, orderId]);
+
+    if (loading) {
+        return <div className="p-4 container mx-auto">Loading order details...</div>;
+    }
+
+    if (error || !order || !user) {
+        return <div className="p-4 container mx-auto">{error || "Could not load order details."}</div>;
+    }
 
     const backPath = user.id === order.buyer_id ? '/dashboard/buying' : '/dashboard/selling';
 
@@ -132,11 +162,8 @@ export default function OrderPage() {
                 </Card>
             )}
 
-            {/* --- THIS IS THE FIX --- */}
-            {/* The OrderActions component will show the correct buttons for the current user and status */}
             <OrderActions order={order} user={user} />
 
-            {/* The chat is shown once the order is no longer awaiting requirements */}
             {order.status !== 'awaiting_requirements' && (
                 <div className="mt-6">
                     <OrderChat orderId={order.id} user={user} />

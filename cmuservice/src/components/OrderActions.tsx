@@ -49,8 +49,6 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         const { error: orderUpdateError } = await supabase.from('orders').update({ status: 'in_progress' }).eq('id', order.id);
         if (orderUpdateError) {
             alert("Failed to update order status: " + orderUpdateError.message);
-        } else {
-            router.refresh();
         }
         setIsSubmitting(false);
     };
@@ -72,8 +70,10 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         if (error) {
             alert("Error delivering order: " + error.message);
         } else {
-            await supabase.from('messages').insert({ order_id: order.id, sender_id: user.id, message_text: 'The seller has delivered the order.', message_type: 'event_delivered' });
-            router.refresh();
+            const messageText = order.status === 'in_revision'
+                ? 'The seller has delivered the revised work.'
+                : 'The seller has delivered the order.';
+            await supabase.from('messages').insert({ order_id: order.id, sender_id: user.id, message_text: messageText, message_type: 'event_delivered' });
         }
     };
 
@@ -95,12 +95,7 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         }
         await supabase.from('messages').insert({ order_id: order.id, sender_id: user.id, message_text: `Revision requested: "${comment}"`, message_type: 'event_revision_request' });
         setIsRevisionDialogOpen(false);
-        router.refresh();
     };
-
-    // --- ADD THIS CONSOLE.LOG ---
-    // This will show us the dialog's state every time the component renders
-    console.log("Dialog state on render:", isRevisionDialogOpen);
 
     // Buyer's view when requirements are needed
     if (isBuyer && order.status === 'awaiting_requirements') {
@@ -111,11 +106,13 @@ export function OrderActions({ order, user }: OrderActionsProps) {
                     <CardHeader><CardTitle>Submit Requirements</CardTitle></CardHeader>
                     <CardContent>
                         <p className="text-muted-foreground mb-4">Provide the necessary information for the seller to begin working.</p>
-                        <Textarea placeholder="e.g., Please proofread the attached document..." value={requirements} onChange={(e) => setRequirements(e.target.value)} className="mb-4" rows={5} />
+                        <Textarea placeholder="e.g., Please proofread the attached document for grammar mistakes..." value={requirements} onChange={(e) => setRequirements(e.target.value)} className="mb-4" rows={5} />
                         <Button onClick={handleSubmitRequirements} disabled={isSubmitting}>{isSubmitting ? 'Submitting...' : 'Submit Requirements'}</Button>
                     </CardContent>
                 </Card>
-                <div className="mt-8"><Button variant="destructive" onClick={() => setIsCancelDialogOpen(true)} disabled={isCanceling}>{isCanceling ? 'Canceling...' : 'Cancel Order'}</Button></div>
+                <div className="mt-8">
+                    <Button variant="destructive" onClick={() => setIsCancelDialogOpen(true)} disabled={isCanceling}>{isCanceling ? 'Canceling...' : 'Cancel Order'}</Button>
+                </div>
             </>
         );
     }
@@ -124,15 +121,35 @@ export function OrderActions({ order, user }: OrderActionsProps) {
     if (!isBuyer && (order.status === 'in_progress' || order.status === 'in_revision')) {
         return (
             <Card>
-                <CardHeader><CardTitle>Deliver Your Work</CardTitle></CardHeader>
+                <CardHeader>
+                    <CardTitle>{order.status === 'in_revision' ? 'Deliver Revised Work' : 'Deliver Your Work'}</CardTitle>
+                </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground mb-4">Once you have completed the work, click the button below to deliver it to the buyer.</p>
-                    <Button onClick={handleDeliverOrder}>Deliver Work</Button>
+                    <p className="text-muted-foreground mb-4">
+                        {order.status === 'in_revision'
+                            ? "The buyer has requested revisions. When you have completed the changes, deliver the work again."
+                            : "You have received the requirements. When you have completed the work, click the button below to deliver it to the buyer."
+                        }
+                    </p>
+                    <Button onClick={handleDeliverOrder}>{order.status === 'in_revision' ? 'Deliver Again' : 'Deliver Work'}</Button>
                 </CardContent>
             </Card>
         );
     }
     
+    // --- NEW SECTION FOR SELLER ---
+    // Seller's view when waiting for buyer's acceptance
+    if (!isBuyer && order.status === 'delivered') {
+        return (
+            <Card>
+                <CardHeader><CardTitle>Pending Buyer&apos;s Acceptance</CardTitle></CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground">You have delivered the order. Please wait for the buyer to review and accept the delivery.</p>
+                </CardContent>
+            </Card>
+        );
+    }
+
     // Buyer's view when the order has been delivered
     if (isBuyer && order.status === 'delivered') {
         return (
@@ -149,6 +166,18 @@ export function OrderActions({ order, user }: OrderActionsProps) {
                     </CardContent>
                 </Card>
             </>
+        );
+    }
+
+    // Buyer's view when the order is IN REVISION (no action buttons)
+    if (isBuyer && order.status === 'in_revision') {
+        return (
+            <Card>
+                <CardHeader><CardTitle>Revision in Progress</CardTitle></CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground">The seller is working on your requested changes. You will be notified when they deliver again.</p>
+                </CardContent>
+            </Card>
         );
     }
 
