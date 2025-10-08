@@ -49,7 +49,6 @@ export default function ReviewPage() {
             return;
         }
 
-        // Fetch order details to get seller_id and service_id
         const { data: order, error: orderError } = await supabase
             .from('orders')
             .select('seller_id, service_id')
@@ -73,8 +72,7 @@ export default function ReviewPage() {
         if (insertError) {
             setError("Error submitting review: " + insertError.message);
         } else {
-            // Redirect to the service page to see the new review
-            router.push(`/services/${order.service_id}`);
+            router.push('/dashboard/buying');
         }
     };
     
