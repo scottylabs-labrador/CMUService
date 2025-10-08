@@ -6,14 +6,14 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-// Define a type that matches the shape of your 'services' table data
 type Service = {
   id: string;
   user_id: string;
   title: string;
   price: number;
   image_url: string | null;
-  // Add other fields from your table here if needed
+  avg_rating: number;
+  review_count: number;
 };
 
 export default async function BrowseServicesPage({ 
@@ -25,21 +25,16 @@ export default async function BrowseServicesPage({
   const { data: { user } } = await supabase.auth.getUser();
   const searchQuery = searchParams.q || '';
 
-  // Apply the new type to your 'services' variable
   let services: Service[] | null;
   let error;
 
   if (searchQuery) {
-    ({ data: services, error } = await supabase
-      .rpc('search_services', { search_term: searchQuery }));
+    ({ data: services, error } = await supabase.rpc('search_services', { search_term: searchQuery }));
   } else {
-    ({ data: services, error } = await supabase
-      .from('services')
-      .select('*'));
+    ({ data: services, error } = await supabase.from('services_with_ratings').select('*'));
   }
   
   if (user && services) {
-    // TypeScript now knows that 'service' is of type 'Service'
     services = services.filter(service => service.user_id !== user.id);
   }
 
@@ -73,6 +68,8 @@ export default async function BrowseServicesPage({
                 price={service.price}
                 sellerName="A CMU Student" 
                 imageUrl={service.image_url || "https://placehold.co/600x400/e0e7ff/4338ca?text=Service"}
+                avgRating={service.avg_rating}
+                reviewCount={service.review_count}
               />
             </Link>
           ))}

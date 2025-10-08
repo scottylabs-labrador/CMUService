@@ -1,66 +1,87 @@
 // src/app/page.tsx
 
-'use client'; // Required for hooks
+import { Button } from "@/components/ui/button";
+import { ServiceCard } from "@/components/ServiceCard";
+import Link from "next/link";
+import { createClient } from "@/utils/supabase/server"; // Use the server client
+import { Marquee } from "@/components/layout/Marquee"; // Import the new Marquee
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { ServiceCard } from '@/components/ServiceCard';
-import { mockServices } from '@/lib/mockData';
+// Define the type for our service data
+type Service = {
+  id: string;
+  user_id: string;
+  title: string;
+  price: number;
+  image_url: string | null;
+  avg_rating: number;
+  review_count: number;
+};
 
-export default function HomePage() {
-  const { isLoggedIn } = useAuth();
-  const router = useRouter();
+// Make the component async to fetch data
+export default async function HomePage() {
+  const supabase = createClient();
 
-  // This effect runs when the component loads.
-  // If the user is logged in, it redirects them to the dashboard.
-  useEffect(() => {
-    if (isLoggedIn) {
-      router.push('/dashboard');
-    }
-  }, [isLoggedIn, router]);
+  // Fetch the 10 most recently created services
+  const { data: services, error } = await supabase
+    .from('services_with_ratings')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(10);
 
-  // To prevent the homepage from flashing before the redirect,
-  // we can return null if the user is logged in.
-  if (isLoggedIn) {
-    return null; 
+  if (error) {
+    console.error("Error fetching featured services:", error);
   }
 
-  // A logged-out user will see the normal homepage:
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="text-center py-20">
-        <h1 className="text-5xl font-bold">The Tartan Marketplace</h1>
-        <p className="text-xl text-muted-foreground mt-4">Services by students, for students.</p>
-        <div className="mt-8 flex justify-center gap-4">
-          <Button asChild size="lg">
-            <Link href="/services">Find a Service</Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link href="/requests">Post a Request</Link>
-          </Button>
+    <>
+      {/* Hero Section (remains the same) */}
+      <section className="text-center py-20 md:py-32 bg-gray-50">
+        <div className="container mx-auto">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+            The Tartan Marketplace
+          </h1>
+          <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
+            Find peer-to-peer services from the CMU community, or offer your own
+            skills to make some extra cash.
+          </p>
+          <div className="mt-8 flex justify-center gap-4">
+            <Button asChild size="lg">
+              <Link href="/services">Find a Service</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+               <Link href="/requests">Post a Request</Link>
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* Featured Services Section */}
-      <section className="py-16">
-        <h2 className="text-3xl font-bold text-center mb-8">Featured Services</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockServices.map((service) => (
-            <Link href={`/services/${service.id}`} key={service.id}>
-              <ServiceCard 
-                title={service.title}
-                price={service.price}
-                sellerName={service.sellerName}
-                imageUrl={service.imageUrl}
-              />
-            </Link>
-          ))}
+      {/* Featured Services Section - Now a dynamic marquee */}
+      <section className="py-20">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">Featured Services</h2>
         </div>
+        
+        {services && services.length > 0 && (
+          <Marquee>
+            {services.map((service) => (
+              <div key={service.id} className="w-80 mx-4">
+                <Link href={`/services/${service.id}`}>
+                  <ServiceCard 
+                    title={service.title}
+                    price={service.price}
+                    sellerName="A CMU Student"
+                    imageUrl={service.image_url || "https://placehold.co/600x400/e0e7ff/4338ca?text=Service"}
+                    avgRating={service.avg_rating}
+                    reviewCount={service.review_count}
+                  />
+                </Link>
+              </div>
+            ))}
+          </Marquee>
+        )}
       </section>
-    </div>
+
+      {/* How It Works & Final CTA Sections (remain the same) */}
+    </>
   );
 }
