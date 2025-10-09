@@ -1,11 +1,13 @@
 // src/components/ServiceCard.tsx
 
+'use client';
+
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Star, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type ServiceCardProps = {
   title: string;
@@ -21,11 +23,19 @@ type ServiceCardProps = {
 
 export function ServiceCard(props: ServiceCardProps) {
   const { title, price, sellerId, sellerName, sellerAvatarUrl, imageUrl, avgRating = 0, reviewCount = 0, onDelete } = props;
+  const router = useRouter();
 
   const handleDeleteClick = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     onDelete?.();
+  };
+
+  const handleProfileClick = (event: React.MouseEvent) => {
+    // Add preventDefault() to stop the parent Link's navigation
+    event.preventDefault(); 
+    event.stopPropagation();
+    router.push(`/profile/${sellerId}`);
   };
 
   return (
@@ -54,8 +64,7 @@ export function ServiceCard(props: ServiceCardProps) {
       
       <CardContent className="p-4 flex-grow">
         <CardTitle className="text-lg line-clamp-2">{title}</CardTitle>
-        {/* The user's avatar and name are now a clickable link */}
-        <Link href={`/profile/${sellerId}`} className="group inline-block mt-2">
+        <div onClick={handleProfileClick} className="group inline-block mt-2 cursor-pointer">
           <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
                   <AvatarImage src={sellerAvatarUrl || undefined} />
@@ -63,7 +72,7 @@ export function ServiceCard(props: ServiceCardProps) {
               </Avatar>
               <p className="text-sm text-muted-foreground group-hover:text-primary group-hover:underline">{sellerName}</p>
           </div>
-        </Link>
+        </div>
       </CardContent>
 
       <CardFooter className="p-4 pt-0 flex justify-between items-center">

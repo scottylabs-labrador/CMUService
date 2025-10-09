@@ -6,7 +6,6 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { Marquee } from "@/components/layout/Marquee";
 
-// Update the type to include the nested profiles object
 type Service = {
   id: string;
   user_id: string;
@@ -24,16 +23,9 @@ type Service = {
 export default async function HomePage() {
   const supabase = createClient();
 
-  // Update the query to join with profiles
   const { data: services, error } = await supabase
     .from('services_with_ratings')
-    .select(`
-        *,
-        profiles (
-            full_name,
-            avatar_url
-        )
-    `)
+    .select(`*, profiles (full_name, avatar_url)`)
     .order('created_at', { ascending: false })
     .limit(10);
 
@@ -72,7 +64,6 @@ export default async function HomePage() {
           <Marquee>
             {services.map((service) => (
               <div key={service.id} className="w-80 mx-4">
-                {/* The outer Link still goes to the service page */}
                 <Link href={`/services/${service.id}`}>
                   <ServiceCard 
                     title={service.title}

@@ -1,51 +1,63 @@
 // src/app/requests/page.tsx
 
+'use client';
+
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { RequestCard } from "@/components/RequestCard";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-// Define a type for your 'requests' table data
 type Request = {
   id: string;
   user_id: string;
   title: string;
   budget: number;
-  description: string | null;
+  status: string;
+  profiles: {
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
 };
 
-export default async function BrowseRequestsPage({ 
-    searchParams 
-}: { 
-    searchParams: { q: string } 
-}) {
+export default function BrowseRequestsPage() {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const searchQuery = searchParams.q || '';
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('q') || '';
 
-  // Apply the new type to your 'requests' variable
-  let requests: Request[] | null;
-  let error;
+  const [requests, setRequests] = useState<Request[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (searchQuery) {
-    ({ data: requests, error } = await supabase
-      .rpc('search_requests', { search_term: searchQuery }));
-  } else {
-    ({ data: requests, error } = await supabase
-      .from('requests')
-      .select('*'));
-  }
+  useEffect(() => {
+    const fetchRequests = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
 
-  if (user && requests) {
-    // TypeScript now knows that 'request' is of type 'Request'
-    requests = requests.filter(request => request.user_id !== user.id);
-  }
+        let query;
+        if (searchQuery) {
+            query = supabase.from('requests').select('*, profiles (full_name, avatar_url)').ilike('title', `%${searchQuery}%`);
+        } else {
+            query = supabase.from('requests').select('*, profiles (full_name, avatar_url)');
+        }
 
-  if (error) {
-    console.error("Error fetching requests:", error);
-    return <p>Sorry, something went wrong. Please try again later.</p>;
-  }
+        const { data, error } = await query.eq('status', 'open');
+
+        if (error) {
+            console.error("Error fetching requests:", error);
+        } else if (data) {
+            let filteredData = data;
+            if (user) {
+                filteredData = data.filter((req: Request) => req.user_id !== user.id);
+            }
+            setRequests(filteredData as Request[]);
+        }
+        setLoading(false);
+    };
+    fetchRequests();
+  }, [searchQuery, supabase]);
+
+  if (loading) return <div className="p-4 container mx-auto">Loading requests...</div>;
   
   return (
     <div className="container mx-auto p-4">
@@ -59,9 +71,9 @@ export default async function BrowseRequestsPage({
         <Button type="submit">Search</Button>
       </form>
       
-      {(!requests || requests.length === 0) ? (
+      {requests.length === 0 ? (
         <p className="text-muted-foreground">
-          {searchQuery ? `No requests found for "${searchQuery}".` : "No requests have been posted yet."}
+          {searchQuery ? `No open requests found for "${searchQuery}".` : "No open requests have been posted yet."}
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -70,7 +82,9 @@ export default async function BrowseRequestsPage({
               <RequestCard 
                 title={request.title}
                 budget={request.budget}
-                buyerName="A CMU Student"
+                buyerId={request.user_id}
+                buyerName={request.profiles?.full_name || 'A CMU Student'}
+                buyerAvatarUrl={request.profiles?.avatar_url || null}
               />
             </Link>
           ))}

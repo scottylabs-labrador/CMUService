@@ -8,6 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useNotification } from "@/context/NotificationContext";
 
 type Offer = {
     id: string;
@@ -20,26 +21,44 @@ export default function RequestOffersPage() {
     const supabase = createClient();
     const params = useParams();
     const router = useRouter();
+    const { showNotification } = useNotification();
     const requestId = params.requestId as string;
+    
     const [offers, setOffers] = useState<Offer[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchOffers = async () => {
             const { data, error } = await supabase
                 .from('offers')
                 .select(`*, profiles (full_name, avatar_url)`)
-                .eq('request_id', requestId);
+                .eq('request_id', requestId)
+                .eq('status', 'pending'); // Only show pending offers
             
             if (data) setOffers(data as Offer[]);
+            setLoading(false);
         };
         if (requestId) fetchOffers();
     }, [requestId, supabase]);
 
     const handleAcceptOffer = async (offerId: string) => {
-        // We will call an Edge Function here in the next step to make this transactional
-        alert("Accepting offer... (functionality to be fully added)");
-        // The edge function will create the order and redirect.
+        setAcceptingId(offerId);
+
+        const { data, error } = await supabase.functions.invoke('accept-offer', {
+            body: { offer_id: offerId },
+        });
+
+        if (error) {
+            showNotification({ title: "Error", description: "Failed to accept offer: " + error.message });
+            setAcceptingId(null);
+        } else {
+            // On success, redirect to the newly created order page
+            router.push(`/orders/${data.new_order_id}`);
+        }
     };
+
+    if (loading) return <div>Loading offers...</div>;
 
     return (
         <div className="container mx-auto p-4 max-w-3xl">
@@ -59,7 +78,12 @@ export default function RequestOffersPage() {
                                         <CardDescription>${offer.offer_price}</CardDescription>
                                     </div>
                                 </div>
-                                <Button onClick={() => handleAcceptOffer(offer.id)}>Accept Offer</Button>
+                                <Button 
+                                    onClick={() => handleAcceptOffer(offer.id)}
+                                    disabled={!!acceptingId}
+                                >
+                                    {acceptingId === offer.id ? 'Accepting...' : 'Accept Offer'}
+                                </Button>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-muted-foreground">{offer.offer_description}</p>
@@ -68,7 +92,7 @@ export default function RequestOffersPage() {
                     ))}
                 </div>
             ) : (
-                <p>You have not received any offers yet.</p>
+                <p className="text-muted-foreground">You have not received any offers yet.</p>
             )}
         </div>
     );
