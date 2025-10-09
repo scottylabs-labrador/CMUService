@@ -3,10 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { ServiceCard } from "@/components/ServiceCard";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/server"; // Use the server client
-import { Marquee } from "@/components/layout/Marquee"; // Import the new Marquee
+import { createClient } from "@/utils/supabase/server";
+import { Marquee } from "@/components/layout/Marquee";
 
-// Define the type for our service data
+// Update the type to include the nested profiles object
 type Service = {
   id: string;
   user_id: string;
@@ -15,16 +15,25 @@ type Service = {
   image_url: string | null;
   avg_rating: number;
   review_count: number;
+  profiles: {
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
 };
 
-// Make the component async to fetch data
 export default async function HomePage() {
   const supabase = createClient();
 
-  // Fetch the 10 most recently created services
+  // Update the query to join with profiles
   const { data: services, error } = await supabase
     .from('services_with_ratings')
-    .select('*')
+    .select(`
+        *,
+        profiles (
+            full_name,
+            avatar_url
+        )
+    `)
     .order('created_at', { ascending: false })
     .limit(10);
 
@@ -34,7 +43,6 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero Section (remains the same) */}
       <section className="text-center py-20 md:py-32 bg-gray-50">
         <div className="container mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
@@ -55,7 +63,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured Services Section - Now a dynamic marquee */}
       <section className="py-20">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Featured Services</h2>
@@ -65,11 +72,14 @@ export default async function HomePage() {
           <Marquee>
             {services.map((service) => (
               <div key={service.id} className="w-80 mx-4">
+                {/* The outer Link still goes to the service page */}
                 <Link href={`/services/${service.id}`}>
                   <ServiceCard 
                     title={service.title}
                     price={service.price}
-                    sellerName="A CMU Student"
+                    sellerId={service.user_id}
+                    sellerName={service.profiles?.full_name || 'A CMU Student'}
+                    sellerAvatarUrl={service.profiles?.avatar_url || null}
                     imageUrl={service.image_url || "https://placehold.co/600x400/e0e7ff/4338ca?text=Service"}
                     avgRating={service.avg_rating}
                     reviewCount={service.review_count}
@@ -80,8 +90,6 @@ export default async function HomePage() {
           </Marquee>
         )}
       </section>
-
-      {/* How It Works & Final CTA Sections (remain the same) */}
     </>
   );
 }

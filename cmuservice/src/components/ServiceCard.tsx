@@ -4,11 +4,15 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Star, Trash2 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import Link from "next/link";
 
 type ServiceCardProps = {
   title: string;
   price: number;
+  sellerId: string;
   sellerName: string;
+  sellerAvatarUrl: string | null;
   imageUrl: string;
   avgRating?: number;
   reviewCount?: number;
@@ -16,7 +20,7 @@ type ServiceCardProps = {
 }
 
 export function ServiceCard(props: ServiceCardProps) {
-  const { title, price, sellerName, imageUrl, avgRating = 0, reviewCount = 0, onDelete } = props;
+  const { title, price, sellerId, sellerName, sellerAvatarUrl, imageUrl, avgRating = 0, reviewCount = 0, onDelete } = props;
 
   const handleDeleteClick = (event: React.MouseEvent) => {
     event.preventDefault();
@@ -48,14 +52,20 @@ export function ServiceCard(props: ServiceCardProps) {
         </div>
       </CardHeader>
       
-      {/* This content area will now grow to fill available space */}
       <CardContent className="p-4 flex-grow">
-        {/* We use line-clamp to limit the title to 2 lines, preventing extreme height differences */}
         <CardTitle className="text-lg line-clamp-2">{title}</CardTitle>
-        <p className="text-sm text-muted-foreground mt-1">by {sellerName}</p>
+        {/* The user's avatar and name are now a clickable link */}
+        <Link href={`/profile/${sellerId}`} className="group inline-block mt-2">
+          <div className="flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                  <AvatarImage src={sellerAvatarUrl || undefined} />
+                  <AvatarFallback>{sellerName ? sellerName.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
+              </Avatar>
+              <p className="text-sm text-muted-foreground group-hover:text-primary group-hover:underline">{sellerName}</p>
+          </div>
+        </Link>
       </CardContent>
 
-      {/* This footer will now be aligned at the bottom of all cards */}
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
         {reviewCount > 0 ? (
           <div className="flex items-center gap-1">

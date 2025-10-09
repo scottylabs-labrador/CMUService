@@ -10,9 +10,6 @@ export function Footer() {
           © {new Date().getFullYear()} CMUService. Built by Tartans, for Tartans.
         </p>
         <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-          <Link href="/about" className="hover:text-primary">About</Link>
-          <Link href="/contact" className="hover:text-primary">Contact</Link>
-          <Link href="/terms" className="hover:text-primary">Terms</Link>
         </nav>
       </div>
     </footer>

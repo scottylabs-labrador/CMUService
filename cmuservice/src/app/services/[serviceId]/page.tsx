@@ -129,17 +129,16 @@ export default function ServiceDetailPage() {
                 <div className="md:col-span-1">
                     <div className="sticky top-8 p-6 border rounded-lg">
                         <h1 className="text-2xl font-bold">{service.title}</h1>
-
-                        {/* --- THIS IS THE MODIFIED SECTION --- */}
-                        <div className="flex items-center gap-2 mt-2">
-                            <p className="text-sm text-muted-foreground">by</p>
-                            <Avatar className="h-6 w-6">
-                                <AvatarImage src={service.profiles?.avatar_url || undefined} />
-                                <AvatarFallback>{service.profiles?.full_name ? service.profiles.full_name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
-                            </Avatar>
-                            <p className="text-md font-medium">{service.profiles?.full_name || 'A CMU Student'}</p>
-                        </div>
-
+                        <Link href={`/profile/${service.user_id}`} className="block mt-2 group">
+                            <div className="flex items-center gap-2">
+                                <p className="text-sm text-muted-foreground group-hover:text-primary">by</p>
+                                <Avatar className="h-6 w-6">
+                                    <AvatarImage src={service.profiles?.avatar_url || undefined} />
+                                    <AvatarFallback>{service.profiles?.full_name ? service.profiles.full_name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
+                                </Avatar>
+                                <p className="text-md font-medium group-hover:underline">{service.profiles?.full_name || 'A CMU Student'}</p>
+                            </div>
+                        </Link>
                          {service.review_count > 0 && (
                             <div className="flex items-center gap-1 mt-2">
                                 <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
