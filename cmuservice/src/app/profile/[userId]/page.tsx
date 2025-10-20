@@ -12,7 +12,6 @@ import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Star } from "lucide-react";
 
-// Update the Profile type to include both rating types
 type Profile = {
     id: string;
     full_name: string | null;
@@ -67,7 +66,6 @@ export default function ProfilePage() {
         const fetchProfileData = async () => {
             if (!userId) return;
 
-            // Fetch from the new 'profiles_with_ratings' view
             const { data: profileData, error: profileError } = await supabase
                 .from('profiles_with_ratings')
                 .select('*')
@@ -120,8 +118,6 @@ export default function ProfilePage() {
                 </Avatar>
                 <div>
                     <h1 className="text-3xl md:text-4xl font-bold">{profile.full_name || 'A CMU User'}</h1>
-                    
-                    {/* --- THIS IS THE NEW RATINGS SECTION --- */}
                     <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-x-4 gap-y-2 mt-2">
                         {profile.service_review_count > 0 && (
                             <div className="flex items-center gap-1">
@@ -185,10 +181,13 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {requests.map((request) => (
                              <Link href={`/requests/${request.id}`} key={request.id}>
+                                {/* --- THIS IS THE FIX --- */}
                                 <RequestCard 
                                     title={request.title}
                                     budget={request.budget}
                                     buyerName={profile.full_name || ''}
+                                    buyerId={profile.id}
+                                    buyerAvatarUrl={profile.avatar_url}
                                 />
                             </Link>
                         ))}
