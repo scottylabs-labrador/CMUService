@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
-import { CheckoutForm } from "@/components/forms/CheckoutForm"; // Import the new component
+import { CheckoutForm } from "@/components/forms/CheckoutForm";
 
 export default async function CheckoutPage({ params }: { params: { serviceId: string } }) {
     const supabase = createClient();
@@ -17,7 +17,7 @@ export default async function CheckoutPage({ params }: { params: { serviceId: st
 
     const { data: service, error } = await supabase
         .from('services')
-        .select('id, user_id, title, price, image_url') // Select only the needed columns
+        .select('id, user_id, title, price, image_url')
         .eq('id', params.serviceId)
         .single();
         
@@ -29,15 +29,12 @@ export default async function CheckoutPage({ params }: { params: { serviceId: st
         return redirect(`/services/${service.id}`);
     }
 
-    const serviceFee = (service.price * 0.05).toFixed(2);
-    const total = (service.price + parseFloat(serviceFee));
-
     return (
         <div className="container mx-auto p-4 max-w-2xl">
-            <h1 className="text-3xl font-bold mb-8">Confirm and Pay</h1>
+            <h1 className="text-3xl font-bold mb-8">Confirm Service Request</h1>
             <Card>
                 <CardHeader>
-                    <CardTitle>Order Summary</CardTitle>
+                    <CardTitle>Service Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex items-center gap-4">
@@ -54,27 +51,20 @@ export default async function CheckoutPage({ params }: { params: { serviceId: st
                         <p className="font-bold text-lg">${service.price.toFixed(2)}</p>
                     </div>
                     <Separator />
-                    <div className="space-y-2">
-                        <div className="flex justify-between">
-                            <p className="text-muted-foreground">Service price</p>
-                            <p>${service.price.toFixed(2)}</p>
-                        </div>
-                         <div className="flex justify-between">
-                            <p className="text-muted-foreground">Service fee</p>
-                            <p>${serviceFee}</p>
-                        </div>
-                    </div>
-                    <Separator />
                      <div className="flex justify-between font-bold text-lg">
-                        <p>Total</p>
-                        <p>${total.toFixed(2)}</p>
+                        <p>Agreed Price</p>
+                        <p>${service.price.toFixed(2)}</p>
                     </div>
                 </CardContent>
                 <CardFooter>
-                    {/* Render the new interactive component, passing the data it needs */}
                     <CheckoutForm service={service} user={user} />
                 </CardFooter>
             </Card>
+            <div className="mt-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                    By confirming, you agree to arrange payment with the seller off-platform.
+                </p>
+            </div>
         </div>
     );
 }

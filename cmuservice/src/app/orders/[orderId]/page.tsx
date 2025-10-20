@@ -14,19 +14,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-// 1. Update the type to include the requests object
 type OrderWithDetails = {
   id: string;
   buyer_id: string;
   seller_id: string;
   status: string;
   amount: number;
-  services: {
-    title: string;
-  } | null;
-  requests: {
-    title: string;
-  } | null;
+  services: { title: string; } | null;
+  requests: { title: string; } | null;
 };
 
 const formatStatus = (status: string) => {
@@ -54,14 +49,9 @@ export default function OrderPage() {
             }
             setUser(user);
 
-            // 2. Update the query to fetch from both services and requests
             const { data: orderData, error: orderError } = await supabase
                 .from('orders')
-                .select(`
-                    *,
-                    services (title),
-                    requests (title)
-                `)
+                .select(`*, services(title), requests(title)`)
                 .eq('id', orderId)
                 .single();
 
@@ -82,16 +72,29 @@ export default function OrderPage() {
                     .limit(1)
                     .single();
                 
-                if (reqError) {
-                    console.error("Error fetching requirements:", reqError);
-                } else if (reqData) {
-                    setRequirements(reqData.requirements_text);
-                }
+                if (reqError) console.error("Error fetching requirements:", reqError);
+                else if (reqData) setRequirements(reqData.requirements_text);
             }
             setLoading(false);
         };
         fetchData();
     }, [orderId, router, supabase]);
+
+    // --- THIS IS THE FIX ---
+    // This effect runs when the page loads to clear related notifications
+    useEffect(() => {
+        const markAsRead = async () => {
+            if (user && orderId) {
+                await supabase
+                    .from('notifications')
+                    .update({ is_read: true })
+                    .eq('recipient_id', user.id)
+                    .eq('order_id', orderId);
+            }
+        };
+        // We call this function once the user and orderId are available
+        markAsRead();
+    }, [user, orderId, supabase]);
 
     useEffect(() => {
         if (!orderId) return;
@@ -107,8 +110,6 @@ export default function OrderPage() {
     if (error || !order || !user) { return <div className="p-4 container mx-auto">{error || "Could not load order details."}</div>; }
 
     const backPath = user.id === order.buyer_id ? '/dashboard/buying' : '/dashboard/selling';
-    
-    // 3. Determine the correct title to display
     const orderTitle = order.services?.title || `Service for "${order.requests?.title}"`;
 
     return (
