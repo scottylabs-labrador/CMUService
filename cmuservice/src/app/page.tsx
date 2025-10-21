@@ -6,22 +6,8 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { Marquee } from "@/components/layout/Marquee";
 
-type Service = {
-  id: string;
-  user_id: string;
-  title: string;
-  price: number;
-  image_url: string | null;
-  avg_rating: number;
-  review_count: number;
-  profiles: {
-    full_name: string | null;
-    avatar_url: string | null;
-  } | null;
-};
-
 export default async function HomePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: services, error } = await supabase
     .from('services_with_ratings')

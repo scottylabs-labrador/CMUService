@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent, ChangeEvent, useRef } from "react";
+import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -45,7 +46,7 @@ export default function SettingsPage() {
     const [imageToCrop, setImageToCrop] = useState<string | null>(null);
     const [isCropModalOpen, setIsCropModalOpen] = useState(false);
     const [crop, setCrop] = useState<Crop>();
-    const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+    const [completedCrop] = useState<PixelCrop>();
     const [newAvatarFile, setNewAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     
@@ -58,6 +59,7 @@ export default function SettingsPage() {
             if (user) {
                 setUser(user);
                 
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { data: profile, error } = await supabase
                     .from('profiles')
                     .select('*')
@@ -166,8 +168,8 @@ export default function SettingsPage() {
                         <DialogDescription>Drag and resize the circle to select your profile picture.</DialogDescription>
                     </DialogHeader>
                     {imageToCrop && (
-                        <ReactCrop crop={crop} onChange={c => setCrop(c)} onComplete={c => setCompletedCrop(c)} aspect={1} circularCrop>
-                            <img ref={imgRef} src={imageToCrop} alt="Image to crop" style={{ maxHeight: '70vh' }}/>
+                        <ReactCrop crop={crop} onChange={(newCrop) => setCrop(newCrop)}>
+                            <Image ref={imgRef} src={imageToCrop || ''} alt="Image to crop" style={{ maxHeight: '70vh' }} width={500} height={500} />
                         </ReactCrop>
                     )}
                     <DialogFooter>

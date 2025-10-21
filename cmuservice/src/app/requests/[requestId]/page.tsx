@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ChevronLeft, Edit } from "lucide-react";
+import { ChevronLeft} from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MakeOfferDialog } from "@/components/ui/MakeOfferDialog";

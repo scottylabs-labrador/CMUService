@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams} from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";

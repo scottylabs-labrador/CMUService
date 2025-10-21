@@ -30,6 +30,7 @@ export default function RequestOffersPage() {
 
     useEffect(() => {
         const fetchOffers = async () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { data, error } = await supabase
                 .from('offers')
                 .select(`*, profiles (full_name, avatar_url)`)

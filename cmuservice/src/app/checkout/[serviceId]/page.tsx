@@ -6,18 +6,14 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { CheckoutForm } from "@/components/forms/CheckoutForm";
-import { User } from "@supabase/supabase-js"; // Import User type
+import { User } from "@supabase/supabase-js";
 
-// 1. Define the correct type for the page props
-interface CheckoutPageProps {
-  params: { serviceId: string };
-}
-
-export default async function CheckoutPage({ params }: CheckoutPageProps) { // 2. Use the defined type
+// The fix is to define the props directly in the function signature
+export default async function CheckoutPage({ params }: { params: { serviceId: string } }) {
     const supabase = await createClient();
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser(); // Add error handling for user
-    if (userError || !user) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
         return redirect('/login');
     }
 
@@ -28,16 +24,16 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) { // 2
         .single();
         
     if (error || !service) {
-        // Provide a more user-friendly error or redirect
-        console.error("Checkout Error:", error);
-        return redirect('/services?error=not_found'); 
+        // Redirect if the service is not found
+        return redirect('/services?error=not_found');
     }
 
+    // Prevent a user from buying their own service
     if (service.user_id === user.id) {
         return redirect(`/services/${service.id}`);
     }
 
-    // Ensure price is a number before calculations
+    // Ensure price is treated as a number
     const priceAsNumber = typeof service.price === 'number' ? service.price : 0;
 
     return (
@@ -68,7 +64,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) { // 2
                     </div>
                 </CardContent>
                 <CardFooter>
-                    {/* Ensure service and user are passed correctly */}
+                    {/* Explicitly cast user to satisfy TypeScript */}
                     <CheckoutForm service={service} user={user as User} /> 
                 </CardFooter>
             </Card>
