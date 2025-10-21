@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ServiceCard } from "@/components/ServiceCard";
 import { createClient } from "@/utils/supabase/client";
@@ -24,7 +24,7 @@ type Service = {
   } | null;
 };
 
-export default function BrowseServicesPage() {
+function BrowseServicesContent() {
   const supabase = createClient();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
@@ -104,5 +104,16 @@ export default function BrowseServicesPage() {
         </div>
       )}
     </div>
+  );
+}
+export default function BrowseServicesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    }>
+      <BrowseServicesContent />
+    </Suspense>
   );
 }

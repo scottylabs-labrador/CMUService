@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { RequestCard } from "@/components/RequestCard";
 import { createClient } from "@/utils/supabase/client";
@@ -22,7 +22,7 @@ type Request = {
   } | null;
 };
 
-export default function BrowseRequestsPage() {
+function BrowseRequestsContent() {
   const supabase = createClient();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
@@ -91,5 +91,16 @@ export default function BrowseRequestsPage() {
         </div>
       )}
     </div>
+  );
+}
+export default function BrowseRequestsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    }>
+      <BrowseRequestsContent />
+    </Suspense>
   );
 }
