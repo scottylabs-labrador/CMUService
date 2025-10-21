@@ -6,34 +6,39 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { CheckoutForm } from "@/components/forms/CheckoutForm";
-import { User } from "@supabase/supabase-js";
+import { User } from "@supabase/supabase-js"; // Import User type
 
 // The fix is to define the props directly in the function signature
 export default async function CheckoutPage({ params }: { params: { serviceId: string } }) {
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    // Fetch user first and handle potential errors
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+        // Redirect to login if user fetch fails or no user exists
         return redirect('/login');
     }
 
-    const { data: service, error } = await supabase
+    // Fetch service details
+    const { data: service, error: serviceFetchError } = await supabase
         .from('services')
         .select('id, user_id, title, price, image_url')
         .eq('id', params.serviceId)
         .single();
         
-    if (error || !service) {
-        // Redirect if the service is not found
-        return redirect('/services?error=not_found');
+    // Handle case where service isn't found
+    if (serviceFetchError || !service) {
+        console.error("Checkout Error - Service not found:", serviceFetchError);
+        // Redirect back to services page with an error indicator
+        return redirect('/services?error=not_found'); 
     }
 
-    // Prevent a user from buying their own service
+    // Prevent user from buying their own service
     if (service.user_id === user.id) {
         return redirect(`/services/${service.id}`);
     }
 
-    // Ensure price is treated as a number
+    // Ensure price is treated as a number, default to 0 if not
     const priceAsNumber = typeof service.price === 'number' ? service.price : 0;
 
     return (
@@ -51,7 +56,7 @@ export default async function CheckoutPage({ params }: { params: { serviceId: st
                                 alt={service.title}
                                 fill
                                 className="object-cover"
-                                unoptimized
+                                unoptimized // Keep this if using placehold.co or SVG placeholders
                             />
                         </div>
                         <p className="font-semibold flex-1">{service.title}</p>
@@ -64,7 +69,7 @@ export default async function CheckoutPage({ params }: { params: { serviceId: st
                     </div>
                 </CardContent>
                 <CardFooter>
-                    {/* Explicitly cast user to satisfy TypeScript */}
+                    {/* Ensure service and user are passed correctly, cast user type */}
                     <CheckoutForm service={service} user={user as User} /> 
                 </CardFooter>
             </Card>
