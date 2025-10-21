@@ -7,7 +7,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function MyServicesPage() {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -46,6 +46,8 @@ export default async function MyServicesPage() {
                                 title={service.title}
                                 price={service.price}
                                 sellerName={user.email || "Your Listing"}
+                                sellerId={service.user_id || "Unknown"}
+                                sellerAvatarUrl={service.seller_avatar_url || "https://placehold.co/100x100/e0e7ff/4338ca?text=Avatar"}
                                 // Use the real image_url, or fall back to the placeholder
                                 imageUrl={service.image_url || "https://placehold.co/600x400/e0e7ff/4338ca?text=Service"}
                             />
