@@ -70,6 +70,7 @@ export default function DashboardPage() {
             // Fetch notifications
             const { data: notifications } = await supabase.from('notifications').select('*, orders(services(title))').eq('recipient_id', user.id).eq('is_read', false).order('created_at', { ascending: false });
             
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const groupedNotifications = new Map<string, any>();
             const newProcessedNotifications: ProcessedNotification[] = [];
 

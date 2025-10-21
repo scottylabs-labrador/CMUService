@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react"; // Import useCallback
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -39,6 +39,21 @@ export default function OrderPage() {
     const [requirements, setRequirements] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // --- 1. Define the markAsRead function using useCallback ---
+    const markNotificationsAsRead = useCallback(async () => {
+        if (user && orderId) {
+            console.log("Marking notifications as read for order:", orderId);
+            const { error } = await supabase
+                .from('notifications')
+                .update({ is_read: true })
+                .eq('recipient_id', user.id)
+                .eq('order_id', orderId);
+            if (error) {
+                console.error("Error marking notifications as read:", error);
+            }
+        }
+    }, [user, orderId, supabase]); // Dependencies for useCallback
 
     useEffect(() => {
         const fetchData = async () => {
@@ -80,22 +95,20 @@ export default function OrderPage() {
         fetchData();
     }, [orderId, router, supabase]);
 
-    // --- THIS IS THE FIX ---
-    // This effect runs when the page loads to clear related notifications
+    // --- 2. Call markAsRead when the component mounts ---
     useEffect(() => {
-        const markAsRead = async () => {
-            if (user && orderId) {
-                await supabase
-                    .from('notifications')
-                    .update({ is_read: true })
-                    .eq('recipient_id', user.id)
-                    .eq('order_id', orderId);
-            }
-        };
-        // We call this function once the user and orderId are available
-        markAsRead();
-    }, [user, orderId, supabase]);
+        markNotificationsAsRead();
+    }, [markNotificationsAsRead]); // Dependency is the function itself
 
+    // --- 3. Add a cleanup function to call markAsRead when unmounting ---
+    useEffect(() => {
+        // This function will run when the component is unmounted (page is left)
+        return () => {
+            markNotificationsAsRead();
+        };
+    }, [markNotificationsAsRead]); // Dependency is the function itself
+
+    // Realtime useEffect for order status updates (remains the same)
     useEffect(() => {
         if (!orderId) return;
         const channel = supabase.channel(`orders:${orderId}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` }, (payload) => {

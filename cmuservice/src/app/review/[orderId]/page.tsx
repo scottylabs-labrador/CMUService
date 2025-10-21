@@ -66,7 +66,6 @@ export default function ReviewPage() {
         let insertError;
 
         if (order.service_id) {
-            // This was an order for a service
             const { error } = await supabase.from('reviews').insert({
                 order_id: orderId,
                 service_id: order.service_id,
@@ -77,7 +76,6 @@ export default function ReviewPage() {
             });
             insertError = error;
         } else if (order.request_id) {
-            // This was an order for a request
             const { error } = await supabase.from('request_reviews').insert({
                 order_id: orderId,
                 request_id: order.request_id,
@@ -96,12 +94,13 @@ export default function ReviewPage() {
         if (insertError) {
             setError("Error submitting review: " + insertError.message);
         } else {
-            // Redirect to the provider's profile page after review
-            router.push(`/profile/${order.seller_id}`);
+            // --- THIS IS THE CHANGE ---
+            // Redirect to the main dashboard page
+            router.push('/dashboard');
         }
         setIsSubmitting(false);
     };
-
+    
     return (
         <div className="container mx-auto p-4 max-w-2xl">
             <Card>

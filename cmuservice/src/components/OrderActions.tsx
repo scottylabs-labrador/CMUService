@@ -11,6 +11,7 @@ import { Button } from "./ui/button";
 import { ConfirmationDialog } from "./ui/ConfirmationDialog";
 import { RevisionRequestDialog } from "./ui/RevisionRequestDialog";
 import { User } from "@supabase/supabase-js";
+import Link from "next/link";
 
 type Order = {
     id: string;
@@ -51,10 +52,7 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         if (orderUpdateError) {
             alert("Failed to update order status: " + orderUpdateError.message);
         } else {
-            const { error: notificationError } = await supabase.from('notifications').insert({ recipient_id: order.seller_id, order_id: order.id, notification_type: 'requirements_submitted', content: 'The buyer has submitted the requirements' });
-            if (notificationError) {
-                console.error("!!! Error creating 'requirements_submitted' notification:", notificationError);
-            }
+            await supabase.from('notifications').insert({ recipient_id: order.seller_id, order_id: order.id, notification_type: 'requirements_submitted', content: 'The buyer has submitted the requirements' });
         }
         setIsSubmitting(false);
     };
@@ -78,21 +76,26 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         } else {
             const messageText = order.status === 'in_revision' ? 'The seller has delivered the revised work.' : 'The seller has delivered the order.';
             await supabase.from('messages').insert({ order_id: order.id, sender_id: user.id, message_text: messageText, message_type: 'event_delivered' });
-            
-            const { error: notificationError } = await supabase.from('notifications').insert({ recipient_id: order.buyer_id, order_id: order.id, notification_type: 'order_delivered', content: 'Your order has been delivered' });
-            if (notificationError) {
-                console.error("!!! Error creating 'order_delivered' notification:", notificationError);
-            }
+            await supabase.from('notifications').insert({ recipient_id: order.buyer_id, order_id: order.id, notification_type: 'order_delivered', content: 'Your order has been delivered' });
         }
     };
 
-    const handleCompleteOrder = async () => {
+    const handleAcceptDelivery = async () => {
+        const { error } = await supabase.from('orders').update({ status: 'awaiting_payment' }).eq('id', order.id);
+        if (error) {
+            alert("Error accepting delivery: " + error.message);
+        } else {
+            await supabase.from('notifications').insert({ recipient_id: order.seller_id, order_id: order.id, notification_type: 'delivery_accepted', content: 'The buyer has accepted your delivery and is ready to pay.' });
+        }
+    };
+
+    const handleConfirmPayment = async () => {
         const { error } = await supabase.from('orders').update({ status: 'completed' }).eq('id', order.id);
         if (error) {
-            alert("Error completing order: " + error.message);
+            alert("Error confirming payment: " + error.message);
         } else {
-            await supabase.from('messages').insert({ order_id: order.id, sender_id: user.id, message_text: 'The buyer has accepted the delivery and completed this order.', message_type: 'event_completed' });
-            router.push(`/review/${order.id}`);
+            await supabase.from('messages').insert({ order_id: order.id, sender_id: user.id, message_text: 'The seller has confirmed payment. This order is now complete.', message_type: 'event_completed' });
+            await supabase.from('notifications').insert({ recipient_id: order.buyer_id, order_id: order.id, notification_type: 'order_completed', content: 'Your order is now complete. Please leave a review!' });
         }
     };
 
@@ -103,11 +106,7 @@ export function OrderActions({ order, user }: OrderActionsProps) {
             return;
         }
         await supabase.from('messages').insert({ order_id: order.id, sender_id: user.id, message_text: `Revision requested: "${comment}"`, message_type: 'event_revision_request' });
-        
-        const { error: notificationError } = await supabase.from('notifications').insert({ recipient_id: order.seller_id, order_id: order.id, notification_type: 'revision_requested', content: 'The buyer has requested a revision' });
-        if (notificationError) {
-            console.error("!!! Error creating 'revision_requested' notification:", notificationError);
-        }
+        await supabase.from('notifications').insert({ recipient_id: order.seller_id, order_id: order.id, notification_type: 'revision_requested', content: 'The buyer has requested a revision' });
         setIsRevisionDialogOpen(false);
     };
 
@@ -119,13 +118,11 @@ export function OrderActions({ order, user }: OrderActionsProps) {
                     <CardHeader><CardTitle>Submit Requirements</CardTitle></CardHeader>
                     <CardContent>
                         <p className="text-muted-foreground mb-4">Provide the necessary information for the seller to begin working.</p>
-                        <Textarea placeholder="e.g., Please proofread the attached document for grammar mistakes..." value={requirements} onChange={(e) => setRequirements(e.target.value)} className="mb-4" rows={5} />
+                        <Textarea placeholder="e.g., Please proofread the attached document..." value={requirements} onChange={(e) => setRequirements(e.target.value)} className="mb-4" rows={5} />
                         <Button onClick={handleSubmitRequirements} disabled={isSubmitting}>{isSubmitting ? 'Submitting...' : 'Submit Requirements'}</Button>
                     </CardContent>
                 </Card>
-                <div className="mt-8">
-                    <Button variant="destructive" onClick={() => setIsCancelDialogOpen(true)} disabled={isCanceling}>{isCanceling ? 'Canceling...' : 'Cancel Order'}</Button>
-                </div>
+                <div className="mt-8"><Button variant="destructive" onClick={() => setIsCancelDialogOpen(true)} disabled={isCanceling}>{isCanceling ? 'Canceling...' : 'Cancel Order'}</Button></div>
             </>
         );
     }
@@ -141,35 +138,73 @@ export function OrderActions({ order, user }: OrderActionsProps) {
             </Card>
         );
     }
+    
+    if (isBuyer && order.status === 'delivered') {
+        return (
+            <>
+                <RevisionRequestDialog isOpen={isRevisionDialogOpen} onClose={() => setIsRevisionDialogOpen(false)} onSubmit={handleRequestRevision} />
+                <Card>
+                    <CardHeader><CardTitle>Order Delivered</CardTitle></CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground mb-4">The seller has delivered your order. Please review the work and either accept it or request a revision.</p>
+                        <div className="flex gap-4">
+                            <Button onClick={handleAcceptDelivery}>Accept Delivery</Button>
+                            <Button variant="outline" onClick={() => setIsRevisionDialogOpen(true)}>Request Revision</Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </>
+        );
+    }
 
-    if (!isBuyer && order.status === 'delivered') {
+    if (isBuyer && order.status === 'in_revision') {
         return (
             <Card>
-                <CardHeader><CardTitle>Pending Buyer&apos;s Acceptance</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Revision in Progress</CardTitle></CardHeader>
+                <CardContent><p className="text-muted-foreground">The seller is working on your requested changes. You will be notified when they deliver again.</p></CardContent>
+            </Card>
+        );
+    }
+
+    if (isBuyer && order.status === 'awaiting_payment') {
+        return (
+            <Card>
+                <CardHeader><CardTitle>Awaiting Payment Confirmation</CardTitle></CardHeader>
+                <CardContent><p className="text-muted-foreground">Please arrange payment with the seller off-platform (e.g., Zelle, cash). Once you have paid, the seller will confirm receipt to complete the order.</p></CardContent>
+            </Card>
+        );
+    }
+
+    if (!isBuyer && order.status === 'awaiting_payment') {
+        return (
+            <Card>
+                <CardHeader><CardTitle>Confirm Payment</CardTitle></CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">You have delivered the order. Please wait for the buyer to review and accept the delivery.</p>
+                    <p className="text-muted-foreground mb-4">The buyer has accepted the delivery. Please confirm that you have received payment to complete this order.</p>
+                    <Button onClick={handleConfirmPayment}>Confirm Payment Received</Button>
                 </CardContent>
             </Card>
         );
     }
 
-    if (isBuyer && (order.status === 'delivered' || order.status === 'in_revision')) {
+    if (!isBuyer && order.status === 'delivered') {
         return (
-            <>
-                <RevisionRequestDialog isOpen={isRevisionDialogOpen} onClose={() => setIsRevisionDialogOpen(false)} onSubmit={handleRequestRevision} />
-                <Card>
-                    <CardHeader><CardTitle>{order.status === 'delivered' ? 'Order Delivered' : 'Revision in Progress'}</CardTitle></CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground mb-4">{order.status === 'delivered' ? "The seller has delivered your order. Please review the work and either accept it or request a revision." : "The seller is working on your requested revisions. You will be notified when they deliver again."}</p>
-                        {order.status === 'delivered' && (
-                            <div className="flex gap-4">
-                                <Button onClick={handleCompleteOrder}>Accept & Complete</Button>
-                                <Button variant="outline" onClick={() => setIsRevisionDialogOpen(true)}>Request Revision</Button>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </>
+            <Card>
+                <CardHeader><CardTitle>Pending Buyer&apos;s Acceptance</CardTitle></CardHeader>
+                <CardContent><p className="text-muted-foreground">You have delivered the order. Please wait for the buyer to review and accept the delivery.</p></CardContent>
+            </Card>
+        );
+    }
+
+    if (isBuyer && order.status === 'completed') {
+        return (
+            <Card>
+                <CardHeader><CardTitle>Order Complete</CardTitle></CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground mb-4">This order is complete. Please leave a review to help other students.</p>
+                    <Button asChild><Link href={`/review/${order.id}`}>Leave a Review</Link></Button>
+                </CardContent>
+            </Card>
         );
     }
 
