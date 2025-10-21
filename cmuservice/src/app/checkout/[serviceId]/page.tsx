@@ -8,8 +8,9 @@ import Image from "next/image";
 import { CheckoutForm } from "@/components/forms/CheckoutForm";
 import { User } from "@supabase/supabase-js"; // Import User type
 
-// The fix is to define the props directly in the function signature
-export default async function CheckoutPage({ params }: { params: { serviceId: string } }) {
+// The fix is to await params in Next.js 15+
+export default async function CheckoutPage({ params }: { params: Promise<{ serviceId: string }> }) {
+    const { serviceId } = await params;
     const supabase = await createClient();
 
     // Fetch user first and handle potential errors
@@ -23,7 +24,7 @@ export default async function CheckoutPage({ params }: { params: { serviceId: st
     const { data: service, error: serviceFetchError } = await supabase
         .from('services')
         .select('id, user_id, title, price, image_url')
-        .eq('id', params.serviceId)
+        .eq('id', serviceId)
         .single();
         
     // Handle case where service isn't found
