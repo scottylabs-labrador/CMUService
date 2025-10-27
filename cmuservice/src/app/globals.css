@@ -112,6 +112,159 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom animations */
+.animate-fade-in-up {
+  animation: fadeInUp 1.2s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dynamic text gradient effects */
+.dynamic-text-gradient {
+  background: linear-gradient(
+    45deg,
+    #1f2937 0%,
+    #c41230 25%,
+    #1f2937 50%,
+    #1e3a5f 75%,
+    #1f2937 100%
+  );
+  background-size: 400% 400%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: dynamicGradient 8s ease-in-out infinite;
+}
+
+.dynamic-text-gradient-alt {
+  background: linear-gradient(
+    -45deg,
+    #c41230 0%,
+    #1f2937 25%,
+    #d4af37 50%,
+    #c41230 75%,
+    #1f2937 100%
+  );
+  background-size: 400% 400%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: dynamicGradientAlt 10s ease-in-out infinite;
+}
+
+.dynamic-text-secondary {
+  background: linear-gradient(
+    90deg,
+    #4b5563 0%,
+    #c41230 30%,
+    #4b5563 60%,
+    #1e3a5f 80%,
+    #4b5563 100%
+  );
+  background-size: 300% 300%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: dynamicTextSecondary 12s ease-in-out infinite;
+}
+
+@keyframes dynamicGradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 25%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+  75% {
+    background-position: 25% 0%;
+  }
+}
+
+@keyframes dynamicGradientAlt {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  33% {
+    background-position: 100% 75%;
+  }
+  66% {
+    background-position: 25% 25%;
+  }
+}
+
+@keyframes dynamicTextSecondary {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Enhanced shadow for buttons */
+.shadow-3xl {
+  box-shadow: 0 25px 50px -12px rgba(196, 18, 48, 0.25),
+    0 10px 20px -5px rgba(196, 18, 48, 0.1);
+}
+
+/* Ensure all text is consistently gray */
+.text-gray-consistency {
+  color: #4b5563;
+}
+
+/* Plaid animation for Marketplace text */
+.plaid-text-animation {
+  background: linear-gradient(
+    45deg,
+    #c41230 0%,
+    #d4af37 25%,
+    #c41230 50%,
+    #d4af37 75%,
+    #c41230 100%
+  );
+  background-size: 200% 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: plaidAnimation 15s ease-in-out infinite;
+}
+
+@keyframes plaidAnimation {
+  0%,
+  100% {
+    background-position: 0% 0%;
+  }
+  25% {
+    background-position: 100% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

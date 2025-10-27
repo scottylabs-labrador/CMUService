@@ -1,12 +1,12 @@
 // app/dashboard/my-services/create/page.tsx
 
-'use client';
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, FormEvent, ChangeEvent } from "react";
@@ -14,121 +14,193 @@ import { createClient } from "@/utils/supabase/client"; // 1. Change the import
 import Image from "next/image";
 
 export default function CreateServicePage() {
-    const supabase = createClient(); // 2. Create the client instance
-    const router = useRouter();
+  const supabase = createClient(); // 2. Create the client instance
+  const router = useRouter();
 
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [price, setPrice] = useState("");
-    const [error, setError] = useState<string | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [serviceImage, setServiceImage] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serviceImage, setServiceImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setServiceImage(file);
-            setImagePreview(URL.createObjectURL(file));
-        }
-    };
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Image size must be less than 5MB");
+        return;
+      }
+      setServiceImage(file);
+      setImagePreview(URL.createObjectURL(file));
+      setError(null); // Clear any previous errors
+    }
+  };
 
-    const handleSubmit = async (event: FormEvent) => {
-        event.preventDefault();
-        setError(null);
-        setIsSubmitting(true);
+  const removeImage = () => {
+    setServiceImage(null);
+    setImagePreview(null);
+    // Reset the file input
+    const fileInput = document.getElementById(
+      "service-image"
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
+    }
+    setError(null);
+  };
 
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            setError("You must be logged in to create a service.");
-            setIsSubmitting(false);
-            return;
-        }
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
 
-        let imageUrl = null;
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setError("You must be logged in to create a service.");
+      setIsSubmitting(false);
+      return;
+    }
 
-        if (serviceImage) {
-            const filePath = `${user.id}/${Date.now()}_${serviceImage.name}`;
-            
-            const { error: uploadError } = await supabase.storage
-                .from('service-images')
-                .upload(filePath, serviceImage);
+    let imageUrl = null;
 
-            if (uploadError) {
-                setError("Error uploading image: " + uploadError.message);
-                setIsSubmitting(false);
-                return;
-            }
+    if (serviceImage) {
+      const filePath = `${user.id}/${Date.now()}_${serviceImage.name}`;
 
-            const { data: { publicUrl } } = supabase.storage
-                .from('service-images')
-                .getPublicUrl(filePath);
-            
-            imageUrl = publicUrl;
-        }
+      const { error: uploadError } = await supabase.storage
+        .from("service-images")
+        .upload(filePath, serviceImage);
 
-        const { error: insertError } = await supabase.from('services').insert({
-            title: title,
-            description: description,
-            price: parseFloat(price),
-            user_id: user.id,
-            image_url: imageUrl,
-        });
-
-        if (insertError) {
-            setError(insertError.message);
-        } else {
-            router.push("/dashboard/my-services");
-        }
-
+      if (uploadError) {
+        setError("Error uploading image: " + uploadError.message);
         setIsSubmitting(false);
-    };
+        return;
+      }
 
-    return (
-        <div>
-            <Link
-                href="/dashboard/my-services"
-                className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-8"
-            >
-                <ChevronLeft className="mr-2 h-4 w-4" />
-                Back to My Services
-            </Link>
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("service-images").getPublicUrl(filePath);
 
-            <h1 className="text-3xl font-bold">Create a New Service</h1>
-            <p className="text-muted-foreground mt-2">
-                Fill out the form below to list a new service you are offering.
-            </p>
+      imageUrl = publicUrl;
+    }
 
-            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-                <div className="space-y-2">
-                    <Label htmlFor="service-image">Service Image</Label>
-                    <Input id="service-image" type="file" onChange={handleFileChange} accept="image/*" />
-                    {imagePreview && (
-                        <div className="mt-4 relative w-72 h-40 rounded-md overflow-hidden">
-                            <Image src={imagePreview} alt="Image preview" fill className="object-cover" />
-                        </div>
-                    )}
-                </div>
+    const { error: insertError } = await supabase.from("services").insert({
+      title: title,
+      description: description,
+      price: parseFloat(price),
+      user_id: user.id,
+      image_url: imageUrl,
+    });
 
-                <div className="space-y-2">
-                    <Label htmlFor="title">Service Title</Label>
-                    <Input id="title" placeholder="e.g., I will proofread your essay" value={title} onChange={(e) => setTitle(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea id="description" placeholder="Describe your service in detail..." value={description} onChange={(e) => setDescription(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="price">Starting Price ($)</Label>
-                    <Input id="price" type="number" placeholder="e.g., 25" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} required />
-                </div>
+    if (insertError) {
+      setError(insertError.message);
+    } else {
+      router.push("/dashboard/my-services");
+    }
 
-                {error && <p className="text-red-600">{error}</p>}
-                
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Creating Service...' : 'Create Service'}
-                </Button>
-            </form>
+    setIsSubmitting(false);
+  };
+
+  return (
+    <div>
+      <Link
+        href="/dashboard/my-services"
+        className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-8"
+      >
+        <ChevronLeft className="mr-2 h-4 w-4" />
+        Back to My Services
+      </Link>
+
+      <h1 className="text-3xl font-bold">Create a New Service</h1>
+      <p className="text-muted-foreground mt-2">
+        Fill out the form below to list a new service you are offering.
+      </p>
+
+      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="service-image">Service Image (Max 5MB)</Label>
+          <Input
+            id="service-image"
+            type="file"
+            onChange={handleFileChange}
+            accept="image/*"
+          />
+          <p className="text-xs text-muted-foreground">
+            Upload an image to represent your service (JPG, PNG, GIF - Max 5MB)
+          </p>
+          {imagePreview && (
+            <div className="mt-4 relative w-72 h-40 rounded-md overflow-hidden border">
+              <Image
+                src={imagePreview}
+                alt="Image preview"
+                fill
+                className="object-cover"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                className="absolute top-2 right-2 w-8 h-8 p-0 rounded-full"
+                onClick={removeImage}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
-    );
+
+        <div className="space-y-2">
+          <Label htmlFor="title">Service Title</Label>
+          <Input
+            id="title"
+            placeholder="e.g., I will proofread your essay"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            placeholder="Describe your service in detail..."
+            value={description}
+            onChange={(e) => {
+              if (e.target.value.length <= 5000) {
+                setDescription(e.target.value);
+              }
+            }}
+            maxLength={5000}
+            rows={6}
+          />
+          <p className="text-xs text-muted-foreground text-right">
+            {description.length}/5000 characters
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="price">Starting Price ($)</Label>
+          <Input
+            id="price"
+            type="number"
+            placeholder="e.g., 25"
+            min="0"
+            step="0.01"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+          />
+        </div>
+
+        {error && <p className="text-red-600">{error}</p>}
+
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Creating Service..." : "Create Service"}
+        </Button>
+      </form>
+    </div>
+  );
 }
