@@ -125,7 +125,7 @@ export function OrderChat({ order, user }: OrderChatProps) {
         .upload(filePath, selectedImage);
 
       if (uploadError) {
-        console.error("Error uploading image:", uploadError);
+        console.log("Error uploading image:", JSON.stringify(uploadError));
         alert("Error uploading image. Please try again.");
         return;
       }
@@ -143,11 +143,13 @@ export function OrderChat({ order, user }: OrderChatProps) {
       order_id: order.id,
       sender_id: user.id,
       message_text: messageText,
+      message_type: "text",
       image_url: imageUrl,
     });
 
     if (messageError) {
-      console.error("Error sending message:", messageError);
+      console.log("Error sending message:", JSON.stringify(messageError));
+      alert(`Failed to send message: ${messageError.message}`);
       return;
     }
 
@@ -164,9 +166,9 @@ export function OrderChat({ order, user }: OrderChatProps) {
       });
 
     if (notificationError) {
-      console.error(
-        "!!! Error creating notification for new message:",
-        notificationError
+      console.log(
+        "Error creating notification for new message:",
+        JSON.stringify(notificationError)
       );
     }
 
