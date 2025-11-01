@@ -10,6 +10,8 @@ import {
   ShoppingCart,
   DollarSign,
   Bell,
+  ShoppingBag,
+  FolderKanban,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -211,7 +213,7 @@ export default function DashboardPage() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">My Services</CardTitle>
-              <PlusCircle className="h-4 w-4 text-muted-foreground" />
+              <ShoppingBag className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{serviceCount}</div>
@@ -225,7 +227,7 @@ export default function DashboardPage() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">My Requests</CardTitle>
-              <ListOrdered className="h-4 w-4 text-muted-foreground" />
+              <FolderKanban className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{requestCount}</div>
@@ -239,7 +241,7 @@ export default function DashboardPage() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                Active Sales
+                Active Selling
               </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>

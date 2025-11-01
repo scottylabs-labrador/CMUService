@@ -9,10 +9,10 @@ import { LayoutDashboard, ShoppingBag, FolderKanban, Settings, DollarSign, Shopp
 
 const navItems = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-    { href: "/dashboard/selling", label: "Selling", icon: DollarSign }, // New "Selling" link
-    { href: "/dashboard/buying", label: "Buying", icon: ShoppingCart }, // New "Buying" link
     { href: "/dashboard/my-services", label: "My Services", icon: ShoppingBag },
     { href: "/dashboard/my-requests", label: "My Requests", icon: FolderKanban },
+    { href: "/dashboard/selling", label: "Active Selling", icon: DollarSign },
+    { href: "/dashboard/buying", label: "Active Purchases", icon: ShoppingCart },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
