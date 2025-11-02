@@ -236,11 +236,11 @@ html {
 .plaid-text-animation {
   background: linear-gradient(
     45deg,
-    #c41230 0%,
-    #d4af37 25%,
-    #c41230 50%,
-    #d4af37 75%,
-    #c41230 100%
+    #ee7752,
+    #c41230,
+    #e73c7e,
+    #23a6d5,
+    #23d5ab
   );
   background-size: 200% 200%;
   background-clip: text;
@@ -262,6 +262,24 @@ html {
   }
   75% {
     background-position: 0% 100%;
+  }
+}
+
+.animated-gradient-background {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient-flow 15s ease infinite;
+}
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 
