@@ -1,4 +1,5 @@
-# CMUService
+# <img width="30" height="30" alt="CMUService_Logo-removebg-preview" src="https://github.com/user-attachments/assets/7fd2ec85-d490-451f-948a-8e4d64946739" />    CMUService
+
 [Updated 11.02.2025]
 
 _by ScottyLabs_
