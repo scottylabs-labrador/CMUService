@@ -1,8 +1,12 @@
 # Changlog
 
-### [11.02] – Instruction
+### [11.02] – UI Changes
 - Updated README.md
-- UI Changes
+- Created Changelog.md
+- Tweaked homepage animation
+- Added UI changes to Login page
+- Added UI changes UI to Dashboard page
+- Allow "glass panel" design as button
 
 ### [11.01] – Chat Fixes
 - Fixed issues with the chat feature not sending or displaying messages properly.
