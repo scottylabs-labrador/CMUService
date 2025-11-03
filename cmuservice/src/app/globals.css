@@ -283,6 +283,32 @@ html {
   }
 }
 
+/* Glossy sweep hover effect for glass buttons */
+.shine-hover {
+  position: relative;
+  overflow: hidden;
+}
+.shine-hover::after {
+  content: "";
+  position: absolute;
+  top: -150%;
+  left: -50%;
+  width: 50%;
+  height: 400%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.55),
+    transparent
+  );
+  transform: rotate(25deg) translateX(-150%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.shine-hover:hover::after {
+  transform: rotate(25deg) translateX(320%);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

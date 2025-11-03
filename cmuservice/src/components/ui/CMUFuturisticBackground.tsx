@@ -20,7 +20,7 @@ const CMUFuturisticBackground = () => {
           y: "110vh",
           x: "50vw",
           scale: [0, 1, 1],
-          opacity: [0, 0.6, 0.4, 0],
+          opacity: [0, 0.45, 0.25, 0],
           transition: {
             duration: 30,
             repeat: Infinity,
@@ -49,7 +49,7 @@ const CMUFuturisticBackground = () => {
           y: "110vh", // Animate to the bottom
           x: `${endX}vw`,
           scale: [0, 1.2, 1],
-          opacity: [0, 0.7, 0.5, 0],
+          opacity: [0, 0.5, 0.3, 0],
           transition: {
             duration,
             repeat: Infinity,
@@ -66,40 +66,40 @@ const CMUFuturisticBackground = () => {
     // New vibrant, Stripe-inspired colors
     {
       size: "60vw",
-      color: "radial-gradient(circle, #ee7752, rgba(231, 60, 126, 0.5))",
+      color: "radial-gradient(circle, #ee7752, rgba(231, 60, 126, 0.4))",
     },
     {
       size: "50vw",
-      color: "radial-gradient(circle, #e73c7e, rgba(35, 166, 213, 0.5))",
+      color: "radial-gradient(circle, #e73c7e, rgba(35, 166, 213, 0.4))",
     },
     {
       size: "70vw",
-      color: "radial-gradient(circle, #23a6d5, rgba(35, 213, 171, 0.5))",
+      color: "radial-gradient(circle, #23a6d5, rgba(35, 213, 171, 0.4))",
     },
     {
       size: "55vw",
-      color: "radial-gradient(circle, #23d5ab, rgba(238, 119, 82, 0.5))",
+      color: "radial-gradient(circle, #23d5ab, rgba(238, 119, 82, 0.4))",
     },
     {
       size: "65vw",
-      color: "radial-gradient(circle, #e73c7e, rgba(238, 119, 82, 0.5))",
+      color: "radial-gradient(circle, #e73c7e, rgba(238, 119, 82, 0.4))",
     },
     {
       size: "45vw",
-      color: "radial-gradient(circle, #23a6d5, rgba(231, 60, 126, 0.5))",
+      color: "radial-gradient(circle, #23a6d5, rgba(231, 60, 126, 0.4))",
     },
     {
       size: "75vw",
-      color: "radial-gradient(circle, #23d5ab, rgba(35, 166, 213, 0.5))",
+      color: "radial-gradient(circle, #23d5ab, rgba(35, 166, 213, 0.4))",
     },
     {
       size: "80vw",
-      color: "radial-gradient(circle, #ee7752, rgba(35, 213, 171, 0.5))",
+      color: "radial-gradient(circle, #ee7752, rgba(35, 213, 171, 0.4))",
     },
   ];
 
   return (
-    <div className="animated-gradient-background absolute inset-0 w-full h-full overflow-hidden">
+    <div className="animated-gradient-background fixed inset-0 z-0 w-full h-full overflow-hidden pointer-events-none opacity-80">
       <div className="absolute inset-0 overflow-hidden">
         {bubbles.map((bubble, i) => {
           const animation = bubbleAnimations[i];

@@ -209,65 +209,77 @@ export default function DashboardPage() {
       </p>
 
       <div className="grid gap-6 mt-8 md:grid-cols-2 lg:grid-cols-4">
-        <Link href="/dashboard/my-services">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">My Services</CardTitle>
-              <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{serviceCount}</div>
-              <p className="text-xs text-muted-foreground">
-                active services you are offering
-              </p>
-            </CardContent>
-          </Card>
+        <Link href="/dashboard/my-services" className="block">
+          <div className="rounded-2xl p-[1px] bg-gradient-to-br from-neutral-100 to-neutral-200">
+            <Card className="rounded-2xl transition-all cursor-pointer bg-white/20 border-white/30 backdrop-blur-lg hover:bg-[rgba(238,119,82,0.18)] hover:ring-2 hover:ring-[#ee7752]/40 hover:shadow-xl hover:shadow-[#ee7752]/20 hover:-translate-y-0.5">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">
+                  My Services
+                </CardTitle>
+                <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{serviceCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  active services you are offering
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </Link>
-        <Link href="/dashboard/my-requests">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">My Requests</CardTitle>
-              <FolderKanban className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{requestCount}</div>
-              <p className="text-xs text-muted-foreground">
-                open requests you have posted
-              </p>
-            </CardContent>
-          </Card>
+        <Link href="/dashboard/my-requests" className="block">
+          <div className="rounded-2xl p-[1px] bg-gradient-to-br from-neutral-100 to-neutral-200">
+            <Card className="rounded-2xl transition-all cursor-pointer bg-white/20 border-white/30 backdrop-blur-lg hover:bg-[rgba(231,60,126,0.18)] hover:ring-2 hover:ring-[#e73c7e]/40 hover:shadow-xl hover:shadow-[#e73c7e]/20 hover:-translate-y-0.5">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">
+                  My Requests
+                </CardTitle>
+                <FolderKanban className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{requestCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  open requests you have posted
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </Link>
-        <Link href="/dashboard/selling">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Selling
-              </CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activeSalesCount}</div>
-              <p className="text-xs text-muted-foreground">
-                orders you need to fulfill
-              </p>
-            </CardContent>
-          </Card>
+        <Link href="/dashboard/selling" className="block">
+          <div className="rounded-2xl p-[1px] bg-gradient-to-br from-neutral-100 to-neutral-200">
+            <Card className="rounded-2xl transition-all cursor-pointer bg-white/20 border-white/30 backdrop-blur-lg hover:bg-[rgba(35,166,213,0.18)] hover:ring-2 hover:ring-[#23a6d5]/40 hover:shadow-xl hover:shadow-[#23a6d5]/20 hover:-translate-y-0.5">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Active Selling
+                </CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{activeSalesCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  orders you need to fulfill
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </Link>
-        <Link href="/dashboard/buying">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Purchases
-              </CardTitle>
-              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activePurchasesCount}</div>
-              <p className="text-xs text-muted-foreground">
-                orders you are waiting for
-              </p>
-            </CardContent>
-          </Card>
+        <Link href="/dashboard/buying" className="block">
+          <div className="rounded-2xl p-[1px] bg-gradient-to-br from-neutral-100 to-neutral-200">
+            <Card className="rounded-2xl transition-all cursor-pointer bg-white/20 border-white/30 backdrop-blur-lg hover:bg-[rgba(35,213,171,0.18)] hover:ring-2 hover:ring-[#23d5ab]/40 hover:shadow-xl hover:shadow-[#23d5ab]/20 hover:-translate-y-0.5">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Active Purchases
+                </CardTitle>
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{activePurchasesCount}</div>
+                <p className="text-xs text-muted-foreground">
+                  orders you are waiting for
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </Link>
       </div>
 

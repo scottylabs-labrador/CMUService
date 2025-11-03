@@ -24,10 +24,12 @@ export default async function HomePage() {
     <div className="relative w-full">
       <CMUFuturisticBackground />
       <div className="relative z-10">
-        <section className="relative flex-grow text-center flex items-center justify-center py-8">
+        {/* Taller hero area: compact top, a bit more bottom space to extend gradient section */}
+        <section className="relative flex-grow text-center flex items-center justify-center pt-4 pb-20 sm:pb-24">
           <div className="w-full max-w-screen-xl mx-auto relative z-10 px-4">
             <div className="animate-fade-in-up">
-              <div className="bg-white/20 backdrop-blur-lg rounded-[3rem] p-16 md:p-24 border border-white/30 shadow-2xl">
+              {/* Slightly wider than the container using small negative margins */}
+              <div className="-mx-2 sm:-mx-4 bg-white/20 backdrop-blur-lg rounded-[3rem] p-16 md:p-24 border border-white/30 shadow-2xl">
                 <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-6 leading-tight relative text-gray-900">
                   <span>The Tartan</span>
                   <span className="block plaid-text-animation mt-2">
@@ -39,21 +41,19 @@ export default async function HomePage() {
                   your own skills to make some extra cash
                 </p>
                 <div className="mt-10 flex flex-col sm:flex-row justify-center gap-6">
+                  {/* Red-tinted glass button (stronger red) */}
                   <Button
                     asChild
                     size="lg"
-                    className="bg-red-700 hover:bg-red-800 text-white shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 px-10 py-5 text-xl font-semibold rounded-2xl"
+                    className="shine-hover rounded-2xl px-10 py-5 text-xl font-semibold border border-white/30 bg-red-600/60 hover:bg-red-600/70 text-white backdrop-blur-lg backdrop-saturate-150 shadow-xl transition-all duration-300 hover:shadow-2xl hover:ring-2 hover:ring-red-300/40 transform hover:scale-105"
                   >
                     <Link href="/services">Find a Service</Link>
                   </Button>
+                  {/* White-tinted glass button */}
                   <Button
                     asChild
                     size="lg"
-                    className="bg-gradient-to-br from-white to-gray-50 text-gray-900 hover:bg-white shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105 px-10 py-5 text-xl font-semibold rounded-2xl border-0"
-                    style={{
-                      boxShadow:
-                        "0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 12px 24px -6px rgba(0, 0, 0, 0.15), 0 4px 12px -2px rgba(0, 0, 0, 0.1)",
-                    }}
+                    className="shine-hover rounded-2xl px-10 py-5 text-xl font-semibold border border-white/40 bg-white/25 hover:bg-white/35 text-gray-900 backdrop-blur-lg shadow-xl transition-all duration-300 hover:shadow-2xl transform hover:scale-105"
                   >
                     <Link href="/requests">Post a Request</Link>
                   </Button>
@@ -64,6 +64,7 @@ export default async function HomePage() {
         </section>
 
         {/* Smooth transition section */}
+        <div id="white-bg-sentinel" className="h-0" />
         <div className="h-16 bg-white" />
 
         <section className="py-12 bg-white">
