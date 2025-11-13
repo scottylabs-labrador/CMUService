@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion"; // Make sure motion is imported
+import { motion } from "framer-motion";
 import React from "react";
 
 export interface ThreeDMarqueeProps<T> {
@@ -16,23 +16,16 @@ export const ThreeDMarquee = <T extends any>({
   className = "",
   cols = 4,
 }: ThreeDMarqueeProps<T>) => {
-  // Handle the case where there are no items
+  // ... (rest of the padding logic) ...
   if (!items || items.length === 0) {
     return null;
   }
-
-  // Define a minimum number of items per column for a "full" look
   const minItemsPerColumn = 5;
   const minTotalItems = minItemsPerColumn * cols;
-
   let paddedItems = [...items];
-
-  // Keep repeating the list until it's long enough
   while (paddedItems.length < minTotalItems) {
     paddedItems = paddedItems.concat(items);
   }
-
-  // Create the columns using the new 'paddedItems' list
   const columns: T[][] = Array.from({ length: cols }, () => []);
   paddedItems.forEach((item, i) => {
     columns[i % cols].push(item);
@@ -51,26 +44,25 @@ export const ThreeDMarquee = <T extends any>({
       </motion.div>
     ));
   };
+  // ... (end of padding logic) ...
 
   return (
     <section
-      className={`mx-auto block h-[600px] max-sm:h-[400px] 
-        overflow-hidden rounded-2xl bg-white dark:bg-black ${className}`}
+      className={`mx-auto block h-[800px] max-sm:h-[500px] 
+        overflow-hidden rounded-2xl bg-white dark:bg-black ${className} 
+        
+        [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]`}
     >
-      {/* --- THIS IS THE FIX --- */}
-      {/* 1. Convert this <div> to a motion.div */}
       <motion.div
-        // 2. Start it as invisible
         initial={{ opacity: 0 }}
-        // 3. Animate it to visible
         animate={{ opacity: 1 }}
-        // 4. Give it a short delay and duration to hide the layout "jump"
         transition={{ duration: 0.5, delay: 0.2 }}
-        // --- END OF FIX ---
         className="flex w-full h-full items-center justify-center"
+        // --- THIS IS THE FIX ---
         style={{
-          transform: "rotateX(55deg) rotateY(0deg) rotateZ(45deg)",
+          transform: "rotateX(55deg) rotateY(0deg) rotateZ(45deg) translateX(25%)", // <-- ADDED translateX
         }}
+        // --- END OF FIX ---
       >
         <div className="w-full overflow-hidden scale-90 sm:scale-100">
           <div
@@ -90,7 +82,7 @@ export const ThreeDMarquee = <T extends any>({
                     y: isEvenColumn ? ["0%", "-50%"] : ["-50%", "0%"],
                   }}
                   transition={{
-                    duration: isEvenColumn ? 120 : 140, // Kept the slow speed
+                    duration: isEvenColumn ? 120 : 140, // Slowed down
                     repeat: Infinity,
                     repeatType: "loop",
                     ease: "linear",

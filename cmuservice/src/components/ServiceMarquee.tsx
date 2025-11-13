@@ -22,11 +22,17 @@ interface Service {
   profiles: Profile;
 }
 
+// 1. ADD className TO THE INTERFACE
 interface ServiceMarqueeProps {
   services: Service[];
+  className?: string; // <-- ADDED
 }
 
-export function ServiceMarquee({ services }: ServiceMarqueeProps) {
+// 2. ACCEPT className IN THE FUNCTION
+export function ServiceMarquee({
+  services,
+  className = "", // <-- ADDED
+}: ServiceMarqueeProps) {
   return (
     <ThreeDMarquee
       items={services}
@@ -43,8 +49,9 @@ export function ServiceMarquee({ services }: ServiceMarqueeProps) {
           reviewCount={service.review_count}
         />
       )}
-      cols={4} // <--- This is the fix
-      className="mx-4"
+      cols={4}
+      // 3. MERGE THE CLASSNAMES
+      className={`mx-4 ${className}`} // <-- MODIFIED
     />
   );
 }

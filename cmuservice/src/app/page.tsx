@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { ServiceMarquee } from "@/components/ServiceMarquee";
-import LiquidEther from '@/components/ui/LiquidEther';
+import LiquidEther from "@/components/ui/LiquidEther";
+import { Navbar } from "@/components/layout/Navbar"; 
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -18,19 +19,21 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="relative w-full"> 
-      <div style={{ 
-        width: '100%', 
-        height: 750, // Extended height
-        position: 'fixed', 
-        top: 0, 
-        left: 0,
-        zIndex: 0, // Sits behind the content
-        backgroundColor: 'black' // Added black background here
-      }}>
+    <div className="relative w-full">
+      <div
+        style={{
+          width: "100%",
+          height: "100vh", // <-- THIS IS THE FIX (was 750)
+          position: "fixed",
+          top: 0,
+          left: 0,
+          zIndex: 0, // Sits behind the content
+          backgroundColor: "black", 
+        }}
+      >
         <LiquidEther
           // Using the bright red, pink, and cyan colors
-          colors={[ '#FF004C', '#FF33CC', '#00FFFF' ]} 
+          colors={["#FF004C", "#FF33CC", "#00FFFF"]}
           mouseForce={20}
           cursorSize={100}
           isViscous={false}
@@ -50,6 +53,9 @@ export default async function HomePage() {
 
       {/* This div has relative z-10, so it will stack on top of the fixed background */}
       <div className="relative z-10">
+        
+        <Navbar /> 
+
         {/* Taller hero area: compact top, a bit more bottom space to extend gradient section */}
         <section className="relative flex-grow text-center flex items-center justify-center pt-4 pb-20 sm:pb-24">
           <div className="w-full max-w-screen-xl mx-auto relative z-10 px-4">
@@ -91,24 +97,29 @@ export default async function HomePage() {
 
         {/* Smooth transition section */}
         <div id="white-bg-sentinel" className="h-0" />
-        <div className="h-16 bg-white" />
+        <div className="h-10 bg-white" />
 
+        {/* --- MODIFIED SECTION --- */}
         <section className="py-12 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-10">
+          <div className="relative">
+            {/* 1. The absolute-positioned text block */}
+            <div className="absolute top-0 md:top-0 left-8 md:left-24 z-10 text-left max-w-sm md:max-w-md">
               <h2 className="text-5xl md:text-6xl font-bold mb-6 text-gray-900">
                 Featured Services
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600">
                 Discover amazing services offered by your fellow CMU students
               </p>
             </div>
-          </div>
-          {services && services.length > 0 && (
-            <ServiceMarquee services={services} />
-          )}
 
+            {/* 2. Wrapper div removed, className passed directly with REDUCED margin-top */}
+            {services && services.length > 0 && (
+              <ServiceMarquee services={services}/>
+            )}
+          </div>
         </section>
+        {/* --- END OF MODIFIED SECTION --- */}
+        
       </div>
     </div>
   );

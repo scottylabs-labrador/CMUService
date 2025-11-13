@@ -3,8 +3,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/layout/Navbar";
-import { ConditionalFooter } from "@/components/layout/ConditionalFooter";
+// Navbar and Footer are removed from here
 import { AuthProvider } from "@/context/AuthContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 
@@ -31,15 +30,10 @@ export default function RootLayout({
       <body className={`${geistSans.variable} antialiased`}>
         <AuthProvider>
           <NotificationProvider>
-            <div className="relative min-h-screen w-full bg-black">
-              <Navbar />
-              {/* Reduced padding to tighten the gap under the navbar */}
-              <div className="relative z-10 flex min-h-screen flex-col pt-6 sm:pt-8">
-                <main className="flex-grow">{children}</main>
-                {/* Hide footer on home page */}
-                <ConditionalFooter />
-              </div>
-            </div>
+            {/* No wrapper div, no bg-white. 
+              This lets the homepage be transparent. 
+            */}
+            {children}
           </NotificationProvider>
         </AuthProvider>
       </body>
