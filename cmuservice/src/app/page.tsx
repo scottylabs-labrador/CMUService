@@ -1,11 +1,8 @@
-// src/app/page.tsx
-
 import { Button } from "@/components/ui/button";
-import { ServiceCard } from "@/components/ServiceCard";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
-import { Marquee } from "@/components/layout/Marquee";
-import { CMUFuturisticBackground } from "@/components/ui/CMUFuturisticBackground";
+import { ServiceMarquee } from "@/components/ServiceMarquee";
+import LiquidEther from '@/components/ui/LiquidEther';
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -21,8 +18,37 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="relative w-full">
-      <CMUFuturisticBackground />
+    <div className="relative w-full"> 
+      <div style={{ 
+        width: '100%', 
+        height: 750, // Extended height
+        position: 'fixed', 
+        top: 0, 
+        left: 0,
+        zIndex: 0, // Sits behind the content
+        backgroundColor: 'black' // Added black background here
+      }}>
+        <LiquidEther
+          // Using the bright red, pink, and cyan colors
+          colors={[ '#FF004C', '#FF33CC', '#00FFFF' ]} 
+          mouseForce={20}
+          cursorSize={100}
+          isViscous={false}
+          viscous={30}
+          iterationsViscous={32}
+          iterationsPoisson={32}
+          resolution={0.5}
+          isBounce={false}
+          autoDemo={true}
+          autoSpeed={0.5}
+          autoIntensity={2.2}
+          takeoverDuration={0.25}
+          autoResumeDelay={3000}
+          autoRampDuration={0.6}
+        />
+      </div>
+
+      {/* This div has relative z-10, so it will stack on top of the fixed background */}
       <div className="relative z-10">
         {/* Taller hero area: compact top, a bit more bottom space to extend gradient section */}
         <section className="relative flex-grow text-center flex items-center justify-center pt-4 pb-20 sm:pb-24">
@@ -78,32 +104,10 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
-
           {services && services.length > 0 && (
-            <Marquee>
-              {services.map((service) => (
-                <div
-                  key={service.id}
-                  className="w-80 mx-4 bg-white/20 backdrop-blur-lg rounded-2xl border border-white/30 shadow-lg"
-                >
-                  <Link href={`/services/${service.id}`}>
-                    <ServiceCard
-                      title={service.title}
-                      price={service.price}
-                      sellerId={service.user_id}
-                      sellerName={
-                        service.profiles?.full_name || "A CMU Student"
-                      }
-                      sellerAvatarUrl={service.profiles?.avatar_url || null}
-                      imageUrl={service.image_url || "/favicon.ico"}
-                      avgRating={service.avg_rating}
-                      reviewCount={service.review_count}
-                    />
-                  </Link>
-                </div>
-              ))}
-            </Marquee>
+            <ServiceMarquee services={services} />
           )}
+
         </section>
       </div>
     </div>
