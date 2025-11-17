@@ -1,55 +1,101 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
+
+// --- 1. New Easing Function ---
+// We add an easing function for a much smoother feel.
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+// --- 2. New Custom Smooth Scroll Function ---
+// This replaces the native 'behavior: "smooth"'
+function customSmoothScroll(targetPosition: number, duration: number) {
+  const startPosition = window.scrollY;
+  const distance = targetPosition - startPosition;
+  let startTime: number | null = null;
+
+  function scrollAnimation(currentTime: number) {
+    if (startTime === null) {
+      startTime = currentTime;
+    }
+
+    const timeElapsed = currentTime - startTime;
+    const progress = Math.min(timeElapsed / duration, 1); // 0 to 1
+    const easedProgress = easeInOutCubic(progress); // Apply easing
+
+    window.scrollTo(0, startPosition + distance * easedProgress);
+
+    if (timeElapsed < duration) {
+      requestAnimationFrame(scrollAnimation);
+    }
+  }
+
+  requestAnimationFrame(scrollAnimation);
+}
+
 
 export function PageScrollManager() {
-  // This state acts as a lock to prevent the event from
-  // firing multiple times while an auto-scroll is in progress.
-  const [isScrolling, setIsScrolling] = useState(false);
+  const isScrollingRef = useRef(false);
+  const downTargetRef = useRef<HTMLElement | null>(null);
+  const downTargetTopRef = useRef(0);
+
+  // --- 3. Set the desired scroll speed ---
+  const scrollDuration = 1500; // 1.5 seconds (was 1.0s lock)
 
   useEffect(() => {
-    // We will target the ID of the div you already have
-    // that marks the top of the white section.
-    const targetElement = document.getElementById("white-bg-sentinel");
+    downTargetRef.current = document.getElementById("white-bg-sentinel");
 
-    if (!targetElement) {
+    if (!downTargetRef.current) {
       console.warn("PageScrollManager: Could not find target element");
       return;
     }
 
+    downTargetTopRef.current = downTargetRef.current.offsetTop;
+
     const handleWheel = (e: WheelEvent) => {
-      // Check if the user is scrolling DOWN
+      if (isScrollingRef.current) {
+        e.preventDefault();
+        return;
+      }
+
+      // 1. User is scrolling DOWN
       if (e.deltaY > 0) {
-        // Check if we're at the top of the page AND not already auto-scrolling
-        if (window.scrollY < 10 && !isScrolling) {
-          // 1. Stop the browser's default scroll
+        if (window.scrollY < 10) {
           e.preventDefault();
+          isScrollingRef.current = true;
           
-          // 2. Set the lock
-          setIsScrolling(true);
+          // --- 4. Use Custom Scroll Function ---
+          customSmoothScroll(downTargetTopRef.current, scrollDuration);
 
-          // 3. Command the browser to smoothly scroll to the target
-          targetElement.scrollIntoView({ behavior: "smooth" });
-
-          // 4. Release the lock after 1 second (1000ms)
-          // This gives the smooth scroll time to finish.
           setTimeout(() => {
-            setIsScrolling(false);
-          }, 1000);
+            isScrollingRef.current = false;
+          }, scrollDuration); // Use the same duration for the lock
+        }
+      } 
+      // 2. User is scrolling UP
+      else if (e.deltaY < 0) {
+        if (Math.abs(window.scrollY - downTargetTopRef.current) < 10) {
+          e.preventDefault();
+          isScrollingRef.current = true;
+
+          // --- 5. Use Custom Scroll Function ---
+          customSmoothScroll(0, scrollDuration); // Scroll to top (0)
+
+          setTimeout(() => {
+            isScrollingRef.current = false;
+          }, scrollDuration); // Use the same duration for the lock
         }
       }
     };
 
-    // Add the event listener. 
-    // 'passive: false' is REQUIRED to allow e.preventDefault()
     window.addEventListener("wheel", handleWheel, { passive: false });
 
-    // Clean up the listener when the component unmounts
     return () => {
       window.removeEventListener("wheel", handleWheel);
     };
-  }, [isScrolling]); // Re-run the effect setup if the 'isScrolling' lock changes
+    
+  }, []); // We don't need scrollDuration here, it's a constant.
 
-  // This component renders no visible HTML
   return null;
 }

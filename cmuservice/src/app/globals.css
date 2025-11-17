@@ -115,6 +115,9 @@
 /* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
+  /* --- THIS IS THE FIX --- */
+  scroll-snap-type: y mandatory; 
+  /* --- END OF FIX --- */
 }
 
 /* Custom animations */

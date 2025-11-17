@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion"; // 1. Import useInView
 import React, { useRef, useState, useLayoutEffect } from "react";
 
 export interface ThreeDMarqueeProps<T> {
@@ -21,7 +21,7 @@ export const ThreeDMarquee = <T extends any>({
   }
 
   // (All your existing logic for padding and layout is unchanged)
-  const minItemsPerColumn = 10;
+  const minItemsPerColumn = 6;
   const minTotalItems = minItemsPerColumn * cols;
   let paddedItems = [...items];
   while (paddedItems.length < minTotalItems) {
@@ -42,38 +42,39 @@ export const ThreeDMarquee = <T extends any>({
     }
   }, [items]);
 
-  // --- 1. DEFINE THE ANIMATION VARIANTS ---
+  // 2. Create a ref for the section
+  const sectionRef = useRef(null);
+  // 3. Track if the section is in view
+  const isInView = useInView(sectionRef, { amount: 0.1 });
+
+  // (All your variants are unchanged)
   const gridContainerVariants = {
     hidden: { opacity: 1 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.3, // Stagger delay
+        staggerChildren: 0.3,
       },
     },
   };
 
-  // Variant for EVEN columns (1 & 3) - rush in from BOTTOM
   const evenColumnVariants = {
-    hidden: { opacity: 0, y: 100 }, // Start 100px DOWN
+    hidden: { opacity: 0, y: 100 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 1.2, ease: "easeOut" }, // Slower duration
+      transition: { duration: 1.2, ease: "easeOut" },
     },
   };
 
-  // --- THIS IS THE FIX ---
-  // Variant for ODD columns (2 & 4) - rush in from TOP
   const oddColumnVariants = {
-    hidden: { opacity: 0, y: -100 }, // Start 100px UP
+    hidden: { opacity: 0, y: -100 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 1.2, ease: "easeOut" }, // Slower duration
+      transition: { duration: 1.2, ease: "easeOut" },
     },
   };
-  // --- END OF FIX ---
 
   const renderItems = (itemsInGroup: T[], keyPrefix: string) => {
     return itemsInGroup.map((item, itemIdx) => (
@@ -91,6 +92,7 @@ export const ThreeDMarquee = <T extends any>({
 
   return (
     <motion.section
+      ref={sectionRef} // 4. Attach the ref to the section
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.1 }}
@@ -120,7 +122,6 @@ export const ThreeDMarquee = <T extends any>({
               const listOneItems = renderItems(itemsInGroup, `col-${idx}-a`);
               const listTwoItems = renderItems(itemsInGroup, `col-${idx}-b`);
 
-              // (Your animation logic is unchanged)
               const evenColAnimation = {
                 y: listHeight > 0 ? ["0%", `-${listHeight}px`] : ["0%", "-50%"],
               };
@@ -129,19 +130,28 @@ export const ThreeDMarquee = <T extends any>({
               };
 
               return (
-                // Outer div for "rush in"
                 <motion.div
                   key={`column-wrapper-${idx}`}
-                  // --- APPLY THE CORRECT VARIANT ---
                   variants={isEvenColumn ? evenColumnVariants : oddColumnVariants}
                   className="relative"
                 >
                   <div className="absolute left-0 top-0 h-full w-0.5 bg-gray-200 dark:bg-gray-700" />
 
-                  {/* Inner div for "infinite loop" */}
                   <motion.div
                     key={`column-looper-${idx}`}
-                    animate={isEvenColumn ? evenColAnimation : oddColAnimation}
+                    
+                    // --- 5. THE OPTIMIZATION ---
+                    // Only pass the animation prop if the section is in view.
+                    // 'undefined' will stop the animation.
+                    animate={
+                      isInView
+                        ? isEvenColumn
+                          ? evenColAnimation
+                          : oddColAnimation
+                        : undefined
+                    }
+                    // --- END OF OPTIMIZATION ---
+
                     transition={{
                       duration: isEvenColumn ? 120 : 140,
                       repeat: Infinity,
@@ -150,7 +160,6 @@ export const ThreeDMarquee = <T extends any>({
                     }}
                     className="flex flex-col items-center"
                   >
-                    {/* (Your layout with the two lists is unchanged) */}
                     {isEvenColumn ? (
                       <>
                         <div

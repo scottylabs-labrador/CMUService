@@ -5,7 +5,7 @@ import { ServiceMarquee } from "@/components/ServiceMarquee";
 import LiquidEther from "@/components/ui/LiquidEther";
 import { Navbar } from "@/components/layout/Navbar";
 import { FeaturedTextFadeIn } from "@/components/ui/FeaturedTextFadeIn";
-import { PageScrollManager } from "@/components/ui/PageScrollManager";
+// We no longer import PageScrollManager
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -21,48 +21,45 @@ export default async function HomePage() {
   }
 
   return (
+    // The <PageScrollManager /> is GONE.
+    // The outer wrapper <div> is GONE.
     <div className="relative w-full">
-      {/* --- Liquid Background --- */}
-      <div
-        style={{
-          width: "100%",
-          height: "100vh",
-          position: "fixed",
-          top: 0,
-          left: 0,
-          zIndex: 0,
-          backgroundColor: "black",
-        }}
-      >
-        <LiquidEther
-          colors={["#FF004C", "#FF33CC", "#00FFFF"]}
-          mouseForce={20}
-          cursorSize={100}
-          isViscous={false}
-          viscous={30}
-          iterationsViscous={32}
-          iterationsPoisson={32}
-          resolution={0.5}
-          isBounce={false}
-          autoDemo={true}
-          autoSpeed={0.5}
-          autoIntensity={2.2}
-          takeoverDuration={0.25}
-          autoResumeDelay={3000}
-          autoRampDuration={0.6}
-        />
-      </div>
+      
+      {/* --- HERO SECTION (Snap Item 1) --- */}
+      {/* Added the 'snap-start' class */}
+      <section className="h-screen relative overflow-hidden snap-start">
+        
+        {/* 1. LiquidEther Background (z-0) */}
+        <div className="absolute top-0 left-0 w-full h-full z-0 bg-black">
+          <LiquidEther
+            colors={["#FF004C", "#FF33CC", "#00FFFF"]}
+            mouseForce={20}
+            cursorSize={30}
+            isViscous={false}
+            viscous={30}
+            isBounce={false}
+            autoDemo={true}
+            autoSpeed={0.5}
+            autoIntensity={2.2}
+            takeoverDuration={0.25}
+            autoResumeDelay={3000}
+            autoRampDuration={0.6}
+            // Your performance props
+            resolution={0.1}
+            iterationsPoisson={6}
+            iterationsViscous={6}
+          />
+        </div>
 
-      {/* --- Main Content (Stacks on top) --- */}
-      <div className="relative z-10">
-        {/* --- Scroll Management Component --- */}
-        <PageScrollManager />
+        {/* 2. Navbar (z-20, absolute) */}
+        <div className="absolute top-0 left-0 w-full z-20">
+          <Navbar />
+        </div>
 
-        <Navbar />
-
-        {/* --- Hero Section --- */}
-        <section className="relative flex-grow text-center flex items-center justify-center pt-4 pb-20 sm:pb-24">
-          <div className="w-full max-w-screen-xl mx-auto relative z-10 px-4">
+        {/* 3. Hero Content (z-10, centered) */}
+        {/* Changed 'pt-30' (invalid) to 'pt-32' (valid) */}
+        <div className="relative h-full z-10 flex items-center justify-center text-center pt-32 pb-20 sm:pb-24">
+          <div className="w-full max-w-screen-xl mx-auto px-4">
             <div className="animate-fade-in-up">
               <div className="-mx-2 sm:-mx-4 bg-white/20 backdrop-blur-lg rounded-[3rem] p-16 md:p-24 border border-white/30 shadow-2xl">
                 <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-6 leading-tight relative text-gray-900">
@@ -94,25 +91,24 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
+      {/* --- END OF HERO SECTION --- */}
 
-        {/* --- Scroll Snap Target --- */}
-        <div id="white-bg-sentinel" className="h-0" />
-        <div className="h-10 bg-white" />
 
-        {/* --- Featured Services Section (White) --- */}
-        <section className="py-12 bg-white">
-          <div className="relative">
-            {/* --- Fade-in Text Component --- */}
-            <FeaturedTextFadeIn />
+      {/* --- FEATURED SERVICES SECTION (Snap Item 2) --- */}
+      {/* Added 'h-screen' and 'snap-start' */}
+      <section className="h-screen relative bg-white snap-start py-12 overflow-hidden">
+        {/* The 'white-bg-sentinel' divs are GONE */}
+        <div className="relative">
+          <FeaturedTextFadeIn />
+          {services && services.length > 0 && (
+            <ServiceMarquee services={services} />
+          )}
+        </div>
+      </section>
+      {/* --- END OF FEATURED SERVICES SECTION --- */}
 
-            {/* --- 3D Marquee --- */}
-            {services && services.length > 0 && (
-              <ServiceMarquee services={services} />
-            )}
-          </div>
-        </section>
-      </div>
     </div>
   );
 }
