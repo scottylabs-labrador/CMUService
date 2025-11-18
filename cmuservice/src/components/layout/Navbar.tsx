@@ -9,6 +9,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 export function Navbar() {
   const { isLoggedIn, logout } = useAuth();
@@ -18,14 +19,14 @@ export function Navbar() {
   const [overWhite, setOverWhite] = useState(!isHome);
 
   useEffect(() => {
-    // On non-home pages, always dark text
     if (!isHome) {
       setOverWhite(true);
       return;
     }
 
     const update = () => {
-      const sentinel = document.getElementById("white-bg-sentinel");
+      // Make sure an element with this ID exists on your homepage
+      const sentinel = document.getElementById("white-bg-sentinel"); 
       const header = document.getElementById("site-navbar");
       if (!sentinel || !header) return;
       const navHeight = header.offsetHeight || 64;
@@ -48,52 +49,103 @@ export function Navbar() {
     router.push("/");
   };
 
-  const navText = overWhite
-    ? "text-gray-900 hover:text-gray-700"
-    : "text-white hover:text-gray-200";
+  // This logic is now correct for both states
+  const navText = isHome
+    ? overWhite
+      ? "text-gray-900 hover:text-gray-700"
+      : "text-white hover:text-gray-200"
+    : "text-gray-900 hover:text-gray-700";
+
+  const navItems = [
+    ...(isLoggedIn ? [{ href: "/dashboard", label: "Dashboard" }] : []),
+    { href: "/services", label: "Browse Services" },
+    { href: "/requests", label: "Browse Requests" },
+  ];
 
   return (
-    <header id="site-navbar" className="sticky top-0 z-50 w-full p-4">
-      <div
+    // This is the outer morphing container
+    <motion.div
+      layoutId="navbar-container"
+      className={cn(
+        "sticky z-50",
+        isHome
+          ? "top-4 p-4"
+          // --- THIS IS THE FIX ---
+          // Removed 'py-4' to make the bar thinner
+          : "top-0 w-full bg-white border-b border-gray-200 shadow-sm"
+      )}
+      // This is the slower transition you wanted
+      transition={{
+        type: "spring",
+        stiffness: 170,
+        damping: 26,
+      }}
+    >
+      {/* This is the inner morphing container */}
+      <motion.div
+        layoutId="navbar-container-inner" 
+        id="site-navbar"
         className={cn(
-          "mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between rounded-[2rem] border border-white/30 bg-white/20 px-6 shadow-lg backdrop-blur-lg"
+          "mx-auto flex h-16 w-full items-center justify-between px-6",
+          isHome
+            ? "max-w-screen-xl rounded-[2rem] border border-white/30 bg-white/20 shadow-lg backdrop-blur-lg"
+            : "max-w-screen-xl"
         )}
       >
-        <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/favicon.png"
-            alt="CMU Service Logo"
-            width={24}
-            height={24}
-            className="rounded-full"
-          />
-          <span className={cn("text-xl font-bold transition-colors", navText)}>
-            CMUService
-          </span>
-        </Link>
-
-        <div className="flex items-center gap-6">
-          {isLoggedIn && (
-            <Link
-              href="/dashboard"
-              className={cn("text-sm font-semibold transition-colors", navText)}
-            >
-              Dashboard
-            </Link>
-          )}
-          <Link
-            href="/services"
-            className={cn("text-sm font-semibold transition-colors", navText)}
-          >
-            Browse Services
+        {/* This wrapper stops the logo from warping */}
+        <motion.div layout="position">
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/favicon.png"
+              alt="CMU Service Logo"
+              width={24}
+              height={24}
+              className="rounded-full"
+            />
+            <span className={cn("text-xl font-bold transition-colors", navText)}>
+              CMUService
+            </span>
           </Link>
-          <Link
-            href="/requests"
-            className={cn("text-sm font-semibold transition-colors", navText)}
-          >
-            Browse Requests
-          </Link>
+        </motion.div>
 
+        {/* This wrapper stops the links from warping */}
+        <motion.div layout="position" className="flex items-center gap-6">
+          <ul className="flex items-center gap-2">
+            {navItems.map((item) => {
+              const isActive = pathname.startsWith(item.href);
+              
+              return (
+                <li key={item.href} className="relative">
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "relative z-10 block rounded-full px-4 py-2 text-sm font-semibold transition-colors",
+                      // Text is white if pill is active, otherwise use dynamic text
+                      isActive ? "text-white" : navText
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+
+                  {/* Bouncy pill now renders on ALL pages */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-nav-pill"
+                      className="absolute inset-0 z-0 bg-gray-900"
+                      style={{ borderRadius: 9999 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* (All your login/logout logic is unchanged) */}
           {isLoggedIn ? (
             <Button
               onClick={handleLogout}
@@ -103,7 +155,6 @@ export function Navbar() {
               Logout
             </Button>
           ) : isHome ? (
-            // Home page: login button with static multi-color ring (no animation)
             <div className="relative inline-flex rounded-full p-[3px] overflow-hidden">
               <span
                 aria-hidden
@@ -117,13 +168,12 @@ export function Navbar() {
               </Button>
             </div>
           ) : (
-            // Other pages: normal login button
             <Button asChild>
               <Link href="/login">Login with Andrew ID</Link>
             </Button>
           )}
-        </div>
-      </div>
-    </header>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -8,7 +8,12 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen">
+    // --- THIS IS THE FIX ---
+    // 1. Removed 'min-h-screen'
+    // 2. Added 'pt-16' (4rem) to push this whole layout
+    //    down, right below your h-16 (4rem) navbar.
+    <div className="flex pt-0">
+    {/* --- END OF FIX --- */}
       <DashboardSidebar />
       <main className="flex-1 p-8">
         {children}
@@ -16,4 +21,3 @@ export default function DashboardLayout({
     </div>
   );
 }
-

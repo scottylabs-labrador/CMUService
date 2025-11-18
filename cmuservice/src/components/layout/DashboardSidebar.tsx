@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -27,21 +28,34 @@ export function DashboardSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 flex-shrink-0 border-r bg-gray-50 p-4">
-      <nav className="flex flex-col gap-2">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-              pathname === item.href && "bg-muted text-primary"
-            )}
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-          </Link>
-        ))}
+    // This outer container is unchanged (sticky, h-screen)
+    <aside className="w-64 flex-shrink-0 border-r bg-gray-50 h-screen sticky top-0">
+      {/* --- THIS IS THE FIX --- */}
+      {/* Changed 'pt-20' to 'pt-16' to move the links up */}
+      <nav className="flex flex-col gap-2 p-4 pt-9">
+      {/* --- END OF FIX --- */}
+        {navItems.map((item) => {
+          const isActive =
+            item.href === "/dashboard"
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                buttonVariants({
+                  variant: isActive ? "default" : "ghost",
+                }),
+                "flex items-center gap-3 justify-start"
+              )}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
     </aside>
   );
