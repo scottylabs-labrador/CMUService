@@ -2,8 +2,8 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from "react"; // Import useCallback
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,7 @@ import { OrderActions } from "@/components/OrderActions";
 import { OrderChat } from "@/components/OrderChat";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Loader2 } from "lucide-react"; // Added icons
 
 type OrderWithDetails = {
   id: string;
@@ -32,6 +32,7 @@ export default function OrderPage() {
     const supabase = createClient();
     const params = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams(); // Hook to read URL params
     const orderId = params.orderId as string;
 
     const [order, setOrder] = useState<OrderWithDetails | null>(null);
@@ -39,21 +40,20 @@ export default function OrderPage() {
     const [requirements, setRequirements] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    
+    // State for payment feedback
+    const paymentStatus = searchParams.get('payment');
 
-    // --- 1. Define the markAsRead function using useCallback ---
     const markNotificationsAsRead = useCallback(async () => {
         if (user && orderId) {
-            console.log("Marking notifications as read for order:", orderId);
             const { error } = await supabase
                 .from('notifications')
                 .update({ is_read: true })
                 .eq('recipient_id', user.id)
                 .eq('order_id', orderId);
-            if (error) {
-                console.error("Error marking notifications as read:", error);
-            }
+            if (error) console.error("Error marking notifications:", error);
         }
-    }, [user, orderId, supabase]); // Dependencies for useCallback
+    }, [user, orderId, supabase]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -87,7 +87,7 @@ export default function OrderPage() {
                     .limit(1)
                     .single();
                 
-                if (reqError) console.error("Error fetching requirements:", reqError);
+                if (reqError && reqError.code !== 'PGRST116') console.error("Error fetching requirements:", reqError);
                 else if (reqData) setRequirements(reqData.requirements_text);
             }
             setLoading(false);
@@ -95,25 +95,25 @@ export default function OrderPage() {
         fetchData();
     }, [orderId, router, supabase]);
 
-    // --- 2. Call markAsRead when the component mounts ---
     useEffect(() => {
         markNotificationsAsRead();
-    }, [markNotificationsAsRead]); // Dependency is the function itself
+        return () => { markNotificationsAsRead(); };
+    }, [markNotificationsAsRead]);
 
-    // --- 3. Add a cleanup function to call markAsRead when unmounting ---
-    useEffect(() => {
-        // This function will run when the component is unmounted (page is left)
-        return () => {
-            markNotificationsAsRead();
-        };
-    }, [markNotificationsAsRead]); // Dependency is the function itself
-
-    // Realtime useEffect for order status updates (remains the same)
+    // Realtime Subscription
+    // This is CRITICAL for Stripe: The webhook updates the DB, this listener updates the UI automatically
     useEffect(() => {
         if (!orderId) return;
-        const channel = supabase.channel(`orders:${orderId}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` }, (payload) => {
-            setOrder(prevOrder => ({ ...prevOrder, ...payload.new } as OrderWithDetails));
-        }).subscribe();
+        const channel = supabase.channel(`orders:${orderId}`)
+            .on(
+                'postgres_changes', 
+                { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` }, 
+                (payload) => {
+                    setOrder(prevOrder => prevOrder ? ({ ...prevOrder, ...payload.new } as OrderWithDetails) : null);
+                }
+            )
+            .subscribe();
+
         return () => {
             supabase.removeChannel(channel);
         };
@@ -130,6 +130,21 @@ export default function OrderPage() {
             <Button asChild variant="outline" className="mb-8">
                 <Link href={backPath}><ChevronLeft className="mr-2 h-4 w-4" />Back to Dashboard</Link>
             </Button>
+
+            {/* PAYMENT FEEDBACK BANNER */}
+            {paymentStatus === 'success' && order.status !== 'completed' && (
+                 <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3 text-blue-700">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <p><strong>Payment Successful!</strong> We are confirming your payment with Stripe. The order status will update automatically in a moment...</p>
+                 </div>
+            )}
+            
+            {paymentStatus === 'success' && order.status === 'completed' && (
+                 <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 text-green-700">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <p><strong>Order Completed!</strong> Payment received successfully.</p>
+                 </div>
+            )}
 
             <h1 className="text-3xl font-bold mb-2">Order Details</h1>
             <p className="text-muted-foreground text-sm mb-8">Order ID: {order.id}</p>

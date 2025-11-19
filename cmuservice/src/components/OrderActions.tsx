@@ -1,5 +1,3 @@
-// src/components/OrderActions.tsx
-
 'use client';
 
 import { useState } from "react";
@@ -12,12 +10,17 @@ import { ConfirmationDialog } from "./ui/ConfirmationDialog";
 import { RevisionRequestDialog } from "./ui/RevisionRequestDialog";
 import { User } from "@supabase/supabase-js";
 import Link from "next/link";
+// NEW IMPORTS
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
+import { createCheckoutSession } from "@/app/actions/stripe";
 
 type Order = {
     id: string;
     status: string;
     buyer_id: string;
     seller_id: string;
+    amount: number;
+    services: { title: string } | null;
 };
 
 interface OrderActionsProps {
@@ -31,8 +34,11 @@ export function OrderActions({ order, user }: OrderActionsProps) {
     const [requirements, setRequirements] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCanceling, setIsCanceling] = useState(false);
+    
+    // Dialog States
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
     const [isRevisionDialogOpen, setIsRevisionDialogOpen] = useState(false);
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false); // NEW
 
     const isBuyer = user.id === order.buyer_id;
 
@@ -80,14 +86,28 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         }
     };
 
-    const handleAcceptDelivery = async () => {
+    // --- NEW: Handle logic for accepting delivery ---
+    const handleAcceptClick = () => {
+        // Instead of updating immediately, open the payment choice dialog
+        setIsPaymentDialogOpen(true);
+    };
+
+    const handleStripePay = async () => {
+        // Calls the Server Action to redirect to Stripe
+        const serviceTitle = order.services?.title || "Custom Service";
+        await createCheckoutSession(order.id, order.amount, serviceTitle);
+    };
+
+    const handleManualPay = async () => {
+        setIsPaymentDialogOpen(false);
         const { error } = await supabase.from('orders').update({ status: 'awaiting_payment' }).eq('id', order.id);
         if (error) {
             alert("Error accepting delivery: " + error.message);
         } else {
-            await supabase.from('notifications').insert({ recipient_id: order.seller_id, order_id: order.id, notification_type: 'delivery_accepted', content: 'The buyer has accepted your delivery and is ready to pay.' });
+            await supabase.from('notifications').insert({ recipient_id: order.seller_id, order_id: order.id, notification_type: 'delivery_accepted', content: 'The buyer has accepted your delivery and will pay manually.' });
         }
     };
+    // ------------------------------------------------
 
     const handleConfirmPayment = async () => {
         const { error } = await supabase.from('orders').update({ status: 'completed' }).eq('id', order.id);
@@ -143,12 +163,36 @@ export function OrderActions({ order, user }: OrderActionsProps) {
         return (
             <>
                 <RevisionRequestDialog isOpen={isRevisionDialogOpen} onClose={() => setIsRevisionDialogOpen(false)} onSubmit={handleRequestRevision} />
+                
+                {/* NEW PAYMENT METHOD DIALOG */}
+                <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Accept Delivery & Pay</DialogTitle>
+                            <DialogDescription>
+                                How would you like to pay for this service?
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-3 py-4">
+                            <Button onClick={handleStripePay} className="w-full bg-[#635bff] hover:bg-[#4b45c6] text-white">
+                                Pay securely with Card (Stripe)
+                            </Button>
+                            <div className="relative text-center">
+                                <span className="bg-background px-2 text-xs text-muted-foreground uppercase">Or</span>
+                            </div>
+                            <Button variant="outline" onClick={handleManualPay} className="w-full">
+                                Pay Manually (Cash/Zelle/Venmo)
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
                 <Card>
                     <CardHeader><CardTitle>Order Delivered</CardTitle></CardHeader>
                     <CardContent>
                         <p className="text-muted-foreground mb-4">The seller has delivered your order. Please review the work and either accept it or request a revision.</p>
                         <div className="flex gap-4">
-                            <Button onClick={handleAcceptDelivery}>Accept Delivery</Button>
+                            <Button onClick={handleAcceptClick}>Accept Delivery</Button>
                             <Button variant="outline" onClick={() => setIsRevisionDialogOpen(true)}>Request Revision</Button>
                         </div>
                     </CardContent>
