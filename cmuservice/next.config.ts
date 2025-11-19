@@ -12,6 +12,11 @@ const nextConfig = {
         hostname: 'kmsiawreljpswyazkjbh.supabase.co',
       },
       {
+        protocol: 'https', // Note: Use HTTPS now
+        hostname: 'bucket-scottylabs.up.railway.app',
+        pathname: '/**',
+      },
+      {
         protocol: 'https',
         hostname: 'placehold.co',
       },

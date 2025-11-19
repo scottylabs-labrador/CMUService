@@ -1,5 +1,3 @@
-// app/dashboard/my-services/create/page.tsx
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -10,11 +8,13 @@ import { ChevronLeft, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, FormEvent, ChangeEvent } from "react";
-import { createClient } from "@/utils/supabase/client"; // 1. Change the import
+import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 
+// Note: No longer importing getPresignedUploadUrl since we use the API route now
+
 export default function CreateServicePage() {
-  const supabase = createClient(); // 2. Create the client instance
+  const supabase = createClient();
   const router = useRouter();
 
   const [title, setTitle] = useState("");
@@ -28,24 +28,20 @@ export default function CreateServicePage() {
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         setError("Image size must be less than 5MB");
         return;
       }
       setServiceImage(file);
       setImagePreview(URL.createObjectURL(file));
-      setError(null); // Clear any previous errors
+      setError(null);
     }
   };
 
   const removeImage = () => {
     setServiceImage(null);
     setImagePreview(null);
-    // Reset the file input
-    const fileInput = document.getElementById(
-      "service-image"
-    ) as HTMLInputElement;
+    const fileInput = document.getElementById("service-image") as HTMLInputElement;
     if (fileInput) {
       fileInput.value = "";
     }
@@ -60,6 +56,7 @@ export default function CreateServicePage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
     if (!user) {
       setError("You must be logged in to create a service.");
       setIsSubmitting(false);
@@ -68,32 +65,42 @@ export default function CreateServicePage() {
 
     let imageUrl = null;
 
+    // --- NEW PROXY UPLOAD LOGIC ---
     if (serviceImage) {
-      const filePath = `${user.id}/${Date.now()}_${serviceImage.name}`;
+      try {
+        const formData = new FormData();
+        formData.append("file", serviceImage);
 
-      const { error: uploadError } = await supabase.storage
-        .from("service-images")
-        .upload(filePath, serviceImage);
+        // 1. Send file to YOUR Next.js API route (which proxies to MinIO)
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (uploadError) {
-        setError("Error uploading image: " + uploadError.message);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Upload failed");
+        }
+
+        // 2. Get the MinIO URL back from your server
+        const data = await response.json();
+        imageUrl = data.url;
+        
+      } catch (err: any) {
+        console.error("Upload failed:", err);
+        setError("Failed to upload image. Please try again.");
         setIsSubmitting(false);
         return;
       }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("service-images").getPublicUrl(filePath);
-
-      imageUrl = publicUrl;
     }
+    // --- END NEW LOGIC ---
 
     const { error: insertError } = await supabase.from("services").insert({
       title: title,
       description: description,
       price: parseFloat(price),
       user_id: user.id,
-      image_url: imageUrl,
+      image_url: imageUrl, // This now saves the MinIO URL
     });
 
     if (insertError) {
