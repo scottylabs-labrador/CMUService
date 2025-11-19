@@ -113,23 +113,45 @@ export default function EditServicePage() {
       return;
     }
 
+    // --- NEW UPDATE LOGIC ---
     if (newImageFile) {
-      const filePath = `${user.id}/${Date.now()}_${newImageFile.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from("service-images")
-        .upload(filePath, newImageFile);
+      try {
+        const formData = new FormData();
+        formData.append("file", newImageFile);
 
-      if (uploadError) {
-        setError("Error uploading new image: " + uploadError.message);
+        // 1. Upload the NEW image
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Upload failed");
+        }
+
+        const data = await response.json();
+        
+        // 2. If successful, delete the OLD image to save space
+        if (updatedImageUrl) {
+          await fetch("/api/delete-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imageUrl: updatedImageUrl }),
+          });
+        }
+
+        // 3. Set the new URL
+        updatedImageUrl = data.url;
+
+      } catch (err: any) {
+        console.error("Image update failed:", err);
+        setError("Error uploading new image: " + err.message);
         setIsSubmitting(false);
         return;
       }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("service-images").getPublicUrl(filePath);
-      updatedImageUrl = publicUrl;
     }
+    // --- END NEW UPDATE LOGIC ---
 
     const { error: updateError } = await supabase
       .from("services")
@@ -152,24 +174,21 @@ export default function EditServicePage() {
   const handleDelete = async () => {
     setIsSubmitting(true);
 
+    // --- NEW DELETE LOGIC ---
+    // 1. Delete the image from MinIO first
     if (currentImageUrl) {
-      const fileName = currentImageUrl.split("/").pop();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (fileName && user) {
-        const { error: storageError } = await supabase.storage
-          .from("service-images")
-          .remove([`${user.id}/${fileName}`]);
-
-        if (storageError) {
-          console.error(
-            "Error deleting image from storage:",
-            storageError.message
-          );
-        }
+      try {
+        await fetch("/api/delete-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageUrl: currentImageUrl }),
+        });
+      } catch (err) {
+        console.error("Error deleting image from storage:", err);
+        // We proceed to delete the service even if the image delete fails
       }
     }
+    // --- END NEW DELETE LOGIC ---
 
     const { error: deleteError } = await supabase
       .from("services")
