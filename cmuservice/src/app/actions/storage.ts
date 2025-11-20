@@ -7,39 +7,36 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from 'uuid';
 
 export async function getPresignedUploadUrl(fileType: string) {
+  console.log("--- [SERVER ACTION] Starting Upload Request ---");
+  
   const fileExtension = fileType.split('/')[1] || 'jpg';
   const fileName = `${uuidv4()}.${fileExtension}`;
+  const bucketName = process.env.MINIO_BUCKET_NAME || "cmuservice-images";
 
-  // Debugging: Print exactly what we are trying to do
-  console.log("--- ATTEMPTING UPLOAD ---");
-  console.log("Endpoint:", process.env.MINIO_ENDPOINT);
-  console.log("Bucket:", process.env.MINIO_BUCKET_NAME);
-  console.log("Region:", process.env.MINIO_REGION);
-  console.log("File:", fileName);
+  console.log(`📂 Bucket: ${bucketName}`);
+  console.log(`📄 Generated Filename: ${fileName}`);
 
   const command = new PutObjectCommand({
-    Bucket: process.env.MINIO_BUCKET_NAME || "cmuservice-images", // Fallback
+    Bucket: bucketName,
     Key: fileName,
     ContentType: fileType,
-    // REMOVE 'ACL' if it was there. MinIO policies often conflict with ACLs.
   });
 
   try {
     const signedUrl = await getSignedUrl(minioClient, command, { expiresIn: 300 });
     
-    // If successful, print the URL (shortened)
-    console.log("Success! Signed URL generated.");
+    // Debugging the URL construction
+    const envBaseUrl = process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL;
+    console.log(`🔗 ENV Base URL: ${envBaseUrl}`);
+
+    // Construct the final URL
+    const publicUrl = `${envBaseUrl}/${fileName}`;
+    console.log(`✅ Final Public URL: ${publicUrl}`);
     
-    const publicUrl = `${process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL}/${fileName}`;
     return { success: true, signedUrl, publicUrl, fileName };
 
   } catch (error: any) {
-    // --- THIS IS THE CRITICAL PART ---
-    console.error("❌ MINIO ERROR DETAILS ❌");
-    console.error("Name:", error.name);
-    console.error("Message:", error.message);
-    console.error("Code:", error.code); // Useful for AWS SDK errors
-    console.error("Stack:", error.stack);
+    console.error("❌ [SERVER ERROR] S3 Signing Failed:", error);
     return { success: false, error: error.message };
   }
 }

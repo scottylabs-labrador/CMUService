@@ -10,15 +10,18 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'kmsiawreljpswyazkjbh.supabase.co',
+        port: '',
       },
       {
-        protocol: 'https', // Note: Use HTTPS now
+        protocol: 'https', 
         hostname: 'bucket-scottylabs.up.railway.app',
+        port: '', // Explicitly empty port ensures standard HTTPS matching
         pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'placehold.co',
+        port: '',
       },
     ],
   },
