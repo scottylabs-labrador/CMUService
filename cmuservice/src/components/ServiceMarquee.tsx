@@ -2,7 +2,7 @@
 
 import { ThreeDMarquee } from "@/components/ui/3d-marquee";
 import { ServiceCard } from "@/components/ServiceCard";
-import Link from "next/link"; // <-- 1. ADD THIS IMPORT
+import Link from "next/link";
 
 interface Profile {
   full_name: string;
@@ -36,10 +36,12 @@ export function ServiceMarquee({
     <ThreeDMarquee
       items={services}
       renderItem={(service) => (
-        // 2. WRAP THE SERVICECARD IN A LINK COMPONENT
-        <Link href={`/services/${service.id}`} key={service.id}>
+        <Link 
+          href={`/services/${service.id}`} 
+          key={service.id}
+          className="w-full block h-full" // <--- This forces the link to fill the column
+        >
           <ServiceCard
-            // The 'key' prop is now on the Link component
             title={service.title}
             price={service.price}
             sellerId={service.user_id}

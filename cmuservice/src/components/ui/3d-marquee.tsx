@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView } from "framer-motion"; // 1. Import useInView
+import { motion, useInView } from "framer-motion";
 import React, { useRef, useState, useLayoutEffect } from "react";
 
 export interface ThreeDMarqueeProps<T> {
@@ -20,7 +20,6 @@ export const ThreeDMarquee = <T extends any>({
     return null;
   }
 
-  // (All your existing logic for padding and layout is unchanged)
   const minItemsPerColumn = 6;
   const minTotalItems = minItemsPerColumn * cols;
   let paddedItems = [...items];
@@ -42,12 +41,9 @@ export const ThreeDMarquee = <T extends any>({
     }
   }, [items]);
 
-  // 2. Create a ref for the section
   const sectionRef = useRef(null);
-  // 3. Track if the section is in view
   const isInView = useInView(sectionRef, { amount: 0.1 });
 
-  // (All your variants are unchanged)
   const gridContainerVariants = {
     hidden: { opacity: 1 },
     visible: {
@@ -82,7 +78,7 @@ export const ThreeDMarquee = <T extends any>({
         key={`${keyPrefix}-${itemIdx}`}
         whileHover={{ y: -10 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="relative"
+        className="relative w-full" // <--- Added w-full to fill column width
       >
         <div className="absolute top-0 left-0 w-full h-0.5 bg-gray-200 dark:bg-gray-700" />
         {renderItem(item, itemIdx)}
@@ -92,13 +88,12 @@ export const ThreeDMarquee = <T extends any>({
 
   return (
     <motion.section
-      ref={sectionRef} // 4. Attach the ref to the section
+      ref={sectionRef}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.1 }}
       className={`mx-auto block h-[800px] max-sm:h-[500px] 
         overflow-hidden rounded-2xl bg-white dark:bg-black ${className} 
-        
         [mask-image:linear-gradient(to_bottom,transparent_0%,black_15%,black_85%,transparent_100%)]`}
     >
       <motion.div
@@ -133,16 +128,12 @@ export const ThreeDMarquee = <T extends any>({
                 <motion.div
                   key={`column-wrapper-${idx}`}
                   variants={isEvenColumn ? evenColumnVariants : oddColumnVariants}
-                  className="relative"
+                  className="relative w-full" // <--- Added w-full here
                 >
                   <div className="absolute left-0 top-0 h-full w-0.5 bg-gray-200 dark:bg-gray-700" />
 
                   <motion.div
                     key={`column-looper-${idx}`}
-                    
-                    // --- 5. THE OPTIMIZATION ---
-                    // Only pass the animation prop if the section is in view.
-                    // 'undefined' will stop the animation.
                     animate={
                       isInView
                         ? isEvenColumn
@@ -150,34 +141,32 @@ export const ThreeDMarquee = <T extends any>({
                           : oddColAnimation
                         : undefined
                     }
-                    // --- END OF OPTIMIZATION ---
-
                     transition={{
                       duration: isEvenColumn ? 120 : 140,
                       repeat: Infinity,
                       repeatType: "loop",
                       ease: "linear",
                     }}
-                    className="flex flex-col items-center"
+                    className="flex flex-col w-full" // <--- Removed items-center, added w-full
                   >
                     {isEvenColumn ? (
                       <>
                         <div
                           ref={idx === 0 ? listRef : null}
-                          className="flex flex-col items-center gap-6"
+                          className="flex flex-col w-full gap-6" // <--- Removed items-center, added w-full
                         >
                           {listOneItems}
                         </div>
-                        <div className="flex flex-col items-center gap-6">
+                        <div className="flex flex-col w-full gap-6"> {/* <--- Removed items-center, added w-full */}
                           {listTwoItems}
                         </div>
                       </>
                     ) : (
                       <>
-                        <div className="flex flex-col items-center gap-6">
+                        <div className="flex flex-col w-full gap-6"> {/* <--- Removed items-center, added w-full */}
                           {listTwoItems}
                         </div>
-                        <div className="flex flex-col items-center gap-6">
+                        <div className="flex flex-col w-full gap-6"> {/* <--- Removed items-center, added w-full */}
                           {listOneItems}
                         </div>
                       </>
