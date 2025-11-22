@@ -11,7 +11,7 @@ Contributor: Eric, Ben, Emma, Lynn, Luna, Ruby
 
 **Getting Start**
 
-NOTE: Require Supabase ANON Key and Project URL to run most updated version locally. 
+NOTE: Require Stripe and Supabase ANON Key and Project URL to run most updated version locally. 
 
 Go to https://cmu-service-6zz5.vercel.app/ for an earlier version
 
