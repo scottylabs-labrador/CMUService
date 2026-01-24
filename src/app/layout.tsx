@@ -27,7 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} antialiased`}
+        suppressHydrationWarning
+      >
         <AuthProvider>
           <NotificationProvider>
             {/* No wrapper div, no bg-white. 
