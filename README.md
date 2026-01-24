@@ -19,7 +19,7 @@ To run locally, clone project:
 ```bash
 git clone https://github.com/scottylabs-labrador/CMUService.git
 
-cd cmuservice
+cd CMUService/app
 ```
 
 Install all required project dependencies:
