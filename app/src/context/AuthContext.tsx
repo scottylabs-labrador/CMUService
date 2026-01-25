@@ -1,10 +1,16 @@
 // src/context/AuthContext.tsx
 
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { createClient } from '@/utils/supabase/client'; // Use the new client-side client
-import { User, SupabaseClient } from '@supabase/supabase-js';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
+import { createClient } from "@/utils/supabase/client"; // Use the new client-side client
+import { User, SupabaseClient } from "@supabase/supabase-js";
 
 interface AuthContextType {
   supabase: SupabaseClient;
@@ -22,14 +28,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setUser(user);
+      } catch (error) {
+        console.warn("Failed to fetch user:", error);
+        setUser(null);
+      }
     };
     checkUser();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-    });
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      },
+    );
 
     return () => {
       authListener?.subscription.unsubscribe();
@@ -50,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

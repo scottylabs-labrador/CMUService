@@ -1,14 +1,19 @@
 // app/layout.tsx
 
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 // Navbar and Footer are removed from here
 import { AuthProvider } from "@/context/AuthContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
@@ -16,7 +21,7 @@ export const metadata: Metadata = {
   title: "CMUService",
   description: "A peer-to-peer service marketplace for CMU students.",
   icons: {
-    icon: "/favicon.png", // Relative path from the public directory
+    icon: "/favicon.png",
   },
 };
 
@@ -28,16 +33,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} antialiased`}
+        className={`${inter.variable} ${outfit.variable} antialiased bg-background text-foreground font-sans`}
         suppressHydrationWarning
       >
         <AuthProvider>
-          <NotificationProvider>
-            {/* No wrapper div, no bg-white. 
-              This lets the homepage be transparent. 
-            */}
-            {children}
-          </NotificationProvider>
+          <NotificationProvider>{children}</NotificationProvider>
         </AuthProvider>
       </body>
     </html>
