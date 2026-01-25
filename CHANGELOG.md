@@ -1,4 +1,11 @@
 # Changlog
+### [01.25] – UI Migration
+- Merged UI design from the designers' repo to the main repo
+- Organized the GitHub repo structure
+  
+### [12.06] – TechSpark
+- Implemented MinIO
+- Add Stripe Payment
 
 ### [11.02] – UI Changes
 - Updated README.md
