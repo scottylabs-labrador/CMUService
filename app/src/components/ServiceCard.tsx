@@ -1,16 +1,25 @@
 // src/components/ServiceCard.tsx
 
-'use client';
+"use client";
 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Star, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useRouter } from "next/navigation";
+import { Badge } from "./ui/badge";
 
 type ServiceCardProps = {
   title: string;
+  description?: string;
+  category?: string;
   price: number;
   sellerId: string;
   sellerName: string;
@@ -19,10 +28,22 @@ type ServiceCardProps = {
   avgRating?: number;
   reviewCount?: number;
   onDelete?: () => void;
-}
+};
 
 export function ServiceCard(props: ServiceCardProps) {
-  const { title, price, sellerId, sellerName, sellerAvatarUrl, imageUrl, avgRating = 0, reviewCount = 0, onDelete } = props;
+  const {
+    title,
+    description,
+    category,
+    price,
+    sellerId,
+    sellerName,
+    sellerAvatarUrl,
+    imageUrl,
+    avgRating = 0,
+    reviewCount = 0,
+    onDelete,
+  } = props;
   const router = useRouter();
 
   const handleDeleteClick = (event: React.MouseEvent) => {
@@ -33,13 +54,13 @@ export function ServiceCard(props: ServiceCardProps) {
 
   const handleProfileClick = (event: React.MouseEvent) => {
     // Add preventDefault() to stop the parent Link's navigation
-    event.preventDefault(); 
+    event.preventDefault();
     event.stopPropagation();
     router.push(`/profile/${sellerId}`);
   };
 
   return (
-    <Card className="overflow-hidden relative flex flex-col h-full">
+    <Card className="overflow-hidden relative flex flex-col h-full group hover:shadow-xl transition-all duration-300 border-border/50 hover:border-primary/30">
       {onDelete && (
         <Button
           variant="destructive"
@@ -51,42 +72,59 @@ export function ServiceCard(props: ServiceCardProps) {
         </Button>
       )}
       <CardHeader className="p-0">
-        <div className="aspect-video relative">
-          <Image 
-            src={imageUrl} 
+        <div className="aspect-[16/10] relative overflow-hidden">
+          <Image
+            src={imageUrl}
             alt={title}
             fill
-            className="object-cover"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
             unoptimized
           />
+          {/* Category Badge */}
+          {category && (
+            <Badge className="absolute bottom-2 left-2 bg-primary text-white text-xs font-medium px-2 py-0.5 rounded-md">
+              {category.toUpperCase()}
+            </Badge>
+          )}
         </div>
       </CardHeader>
-      
-      <CardContent className="p-4 flex-grow">
-        <CardTitle className="text-lg line-clamp-2">{title}</CardTitle>
-        <div onClick={handleProfileClick} className="group inline-block mt-2 cursor-pointer">
-          <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                  <AvatarImage src={sellerAvatarUrl || undefined} />
-                  <AvatarFallback>{sellerName ? sellerName.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
-              </Avatar>
-              <p className="text-sm text-muted-foreground group-hover:text-primary group-hover:underline">{sellerName}</p>
-          </div>
+
+      <CardContent className="p-3 flex-grow">
+        {/* Price and Exchange Options */}
+        <div className="flex items-center gap-2 mb-2">
+          {price > 0 && (
+            <span className="text-xs font-semibold bg-muted px-2 py-0.5 rounded-full">
+              ${price}
+            </span>
+          )}
+          {price > 0 && (
+            <span className="text-xs text-muted-foreground">or</span>
+          )}
+          <span className="text-xs font-medium bg-muted px-2 py-0.5 rounded-full">
+            Exchange
+          </span>
+        </div>
+
+        <CardTitle className="text-base font-semibold line-clamp-1 mb-1">
+          {title}
+        </CardTitle>
+
+        {/* Seller Info */}
+        <div
+          onClick={handleProfileClick}
+          className="group/seller inline-flex items-center gap-1.5 cursor-pointer"
+        >
+          <Avatar className="h-4 w-4">
+            <AvatarImage src={sellerAvatarUrl || undefined} />
+            <AvatarFallback className="text-[10px]">
+              {sellerName ? sellerName.charAt(0).toUpperCase() : "U"}
+            </AvatarFallback>
+          </Avatar>
+          <p className="text-xs text-muted-foreground group-hover/seller:text-primary transition-colors">
+            {sellerName}
+          </p>
         </div>
       </CardContent>
-
-      <CardFooter className="p-4 pt-0 flex justify-between items-center">
-        {reviewCount > 0 ? (
-          <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-            <span className="font-semibold text-sm">{avgRating.toFixed(1)}</span>
-            <span className="text-sm text-muted-foreground">({reviewCount})</span>
-          </div>
-        ) : (
-          <div className="text-sm text-muted-foreground">No reviews yet</div>
-        )}
-        <p className="font-semibold">Starting at ${price}</p>
-      </CardFooter>
     </Card>
   );
 }

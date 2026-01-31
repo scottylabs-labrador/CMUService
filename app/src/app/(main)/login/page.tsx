@@ -7,19 +7,10 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// 1. REMOVED old import
-// import { CMUFuturisticBackground } from "@/components/ui/CMUFuturisticBackground";
-// 2. ADDED new import
-import LiquidEther from "@/components/ui/LiquidEther";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const supabase = createClient();
@@ -48,91 +39,112 @@ export default function LoginPage() {
       setError(signInError.message);
     } else {
       router.push("/dashboard");
-      router.refresh(); // Refresh the page to ensure server components reload
+      router.refresh();
     }
   };
 
   return (
-    // 3. Changed layout to match homepage
-    <div className="relative w-full">
-      {/* 4. Added fixed LiquidEther background */}
-      <div
-        style={{
-          width: "100%",
-          height: "100vh",
-          position: "fixed",
-          top: 0,
-          left: 0,
-          zIndex: 0,
-          backgroundColor: "black",
-        }}
-      >
-        <LiquidEther
-          // Using the same props as your homepage for consistency
-          colors={["#FF004C", "#FF33CC", "#00FFFF"]}
-          mouseForce={20}
-          cursorSize={30}
-          isViscous={false}
-          viscous={30}
-          isBounce={false}
-          autoDemo={true}
-          autoSpeed={0.5}
-          autoIntensity={2.2}
-          takeoverDuration={0.25}
-          autoResumeDelay={3000}
-          autoRampDuration={0.6}
-          // Performance props
-          resolution={0.1}
-          iterationsPoisson={6}
-          iterationsViscous={6}
+    <div className="relative min-h-screen w-full bg-[#F5F5F5] dark:bg-[#0A0A0A] overflow-hidden">
+      {/* Animated Gradient Orb - matching home screen */}
+      <div className="absolute top-[30%] right-[-15%] md:right-[-5%] w-[500px] h-[500px] md:w-[700px] md:h-[700px] rounded-full blur-[80px] md:blur-[120px] pointer-events-none z-0 animate-[move-in-circle_8s_linear_infinite]">
+        <div
+          className="w-full h-full animate-[pulse-glow_8s_ease-in-out_infinite]"
+          style={{
+            background:
+              "radial-gradient(circle at center, #FF8800 0%, #FF6600 15%, #FF7700 30%, #FF5500 45%, #FF6699 65%, #FF88AA 80%, transparent 100%)",
+          }}
         />
       </div>
 
-      {/* 5. Your content, now with z-10 and min-h-screen */}
-      <div className="relative z-10 flex min-h-screen items-start justify-center pt-20 sm:pt-24">
-        <Card className="w-full max-w-md bg-white/20 border-white/30 backdrop-blur-lg shadow-2xl rounded-3xl">
-          <CardHeader>
-            <CardTitle className="text-2xl text-gray-900">Login</CardTitle>
-            <CardDescription className="text-white/90">
-              Enter your credentials to access your dashboard.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex flex-col px-6 sm:px-12 lg:px-24 py-8">
+        {/* Back to Home link */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-12 w-fit"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Home
+        </Link>
+
+        {/* Main content */}
+        <div className="flex-1 flex items-start pt-8">
+          <div className="w-full max-w-md">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+                WELCOME <span className="text-orange-500">BACK</span>
+              </h1>
+              <p className="text-muted-foreground mt-3 text-lg">
+                Sign in to your CMU Service account.
+                <br />
+                Access your dashboard and services.
+              </p>
+            </div>
+
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label
+                  htmlFor="email"
+                  className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+                >
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="you@andrew.cmu.edu"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="h-12 bg-white/80 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-orange-400/20 transition-all"
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label
+                  htmlFor="password"
+                  className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+                >
+                  Password
+                </Label>
                 <Input
                   id="password"
                   type="password"
+                  placeholder=""
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="h-12 bg-white/80 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-orange-400/20 transition-all"
                 />
               </div>
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              {/* Sign In with conic gradient perimeter, same style as home login */}
-              <div className="inline-flex w-full rounded-full p-[3px] bg-[conic-gradient(#ee7752,#e73c7e,#23a6d5,#23d5ab,#ee7752)] shadow-[0_0_18px_rgba(231,60,126,0.35)]">
-                <Button
-                  type="submit"
-                  className="w-full rounded-full bg-black/50 text-white border border-white/40 backdrop-blur-md transition-colors hover:bg-black/60"
+
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full h-12 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all hover:shadow-orange-500/40"
+              >
+                Sign In
+              </Button>
+
+              <p className="text-center text-sm text-muted-foreground">
+                Don&apos;t have an account?{" "}
+                <Link
+                  href="/register"
+                  className="text-orange-500 hover:text-orange-600 font-medium transition-colors"
                 >
-                  Sign In
-                </Button>
-              </div>
+                  Sign up
+                </Link>
+              </p>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

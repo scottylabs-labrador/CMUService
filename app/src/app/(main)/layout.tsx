@@ -15,25 +15,28 @@ export default function MainLayout({
   const pathname = usePathname();
   const isLoginPage = pathname.startsWith("/login");
   const isDashboard = pathname.startsWith("/dashboard");
+  const isServicesPage =
+    pathname === "/services" || pathname.startsWith("/services/");
+  const isRequestsPage =
+    pathname === "/requests" || pathname.startsWith("/requests/");
 
   return (
-    <div 
-      className={cn(
-        "relative min-h-screen w-full text-black",
-        isLoginPage ? "bg-black" : "bg-white"
-      )}
-    >
+    <div className={cn("relative min-h-screen w-full text-black bg-white")}>
       {!isLoginPage && <Navbar />}
 
-      <div 
+      <div
         className={cn(
           "relative z-10 flex min-h-screen flex-col",
-          // This correctly removes the gap on dashboard pages
-          !isLoginPage && !isDashboard && "pt-6 sm:pt-8"
+          // Remove padding for dashboard, services, and requests pages
+          !isLoginPage &&
+            !isDashboard &&
+            !isServicesPage &&
+            !isRequestsPage &&
+            "pt-6 sm:pt-8",
         )}
       >
         <main className="flex-grow">{children}</main>
-        
+
         {/* --- THIS IS THE FIX --- */}
         {/* Removed '!isDashboard' to show the footer on the dashboard */}
         {!isLoginPage && <ConditionalFooter />}
