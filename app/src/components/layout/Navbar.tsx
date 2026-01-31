@@ -99,7 +99,7 @@ export function Navbar() {
           </Link>
 
           {/* Mail icon with notification badge */}
-          {isLoggedIn && (
+          {/* {isLoggedIn && (
             <Link
               href="/dashboard"
               className="relative p-2 hover:bg-orange-100 rounded-full transition-colors"
@@ -111,7 +111,7 @@ export function Navbar() {
                 </span>
               )}
             </Link>
-          )}
+          )} */}
 
           {/* User icon / Login */}
           {isLoggedIn ? (
