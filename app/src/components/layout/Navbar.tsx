@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { Mail, User } from "lucide-react";
+import { User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
@@ -97,21 +97,6 @@ export function Navbar() {
           >
             List a Service
           </Link>
-
-          {/* Mail icon with notification badge */}
-          {/* {isLoggedIn && (
-            <Link
-              href="/dashboard"
-              className="relative p-2 hover:bg-orange-100 rounded-full transition-colors"
-            >
-              <Mail className="w-5 h-5 text-gray-700" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </Link>
-          )} */}
 
           {/* User icon / Login */}
           {isLoggedIn ? (

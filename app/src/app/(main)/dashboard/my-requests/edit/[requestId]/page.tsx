@@ -13,10 +13,12 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, FormEvent } from "react";
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/context/AuthContext";
 
 export default function EditRequestPage() {
     const supabase = createClient();
     const router = useRouter();
+    const { user } = useAuth();
     const params = useParams();
     const requestId = params.requestId as string;
 
@@ -30,7 +32,6 @@ export default function EditRequestPage() {
 
     useEffect(() => {
         const fetchRequest = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 router.push('/login');
                 return;
@@ -61,7 +62,7 @@ export default function EditRequestPage() {
         };
 
         fetchRequest();
-    }, [requestId, router, supabase]);
+    }, [requestId, router, supabase, user]);
     
     const handleUpdate = async (event: FormEvent) => {
         event.preventDefault();

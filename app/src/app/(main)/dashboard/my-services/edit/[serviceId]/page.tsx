@@ -14,10 +14,12 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/context/AuthContext";
 
 export default function EditServicePage() {
   const supabase = createClient();
   const router = useRouter();
+  const { user } = useAuth();
   const params = useParams();
   const serviceId = params.serviceId as string;
 
@@ -34,9 +36,6 @@ export default function EditServicePage() {
 
   useEffect(() => {
     const fetchService = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         router.push("/login");
         return;
@@ -69,7 +68,7 @@ export default function EditServicePage() {
     };
 
     fetchService();
-  }, [serviceId, router, supabase]);
+  }, [serviceId, router, supabase, user]);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -105,9 +104,6 @@ export default function EditServicePage() {
     setError(null);
     let updatedImageUrl = currentImageUrl;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
     if (!user) {
       router.push("/login");
       return;

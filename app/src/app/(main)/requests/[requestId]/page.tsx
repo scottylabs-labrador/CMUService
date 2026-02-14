@@ -8,10 +8,10 @@ import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ChevronLeft} from "lucide-react";
-import { User } from "@supabase/supabase-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MakeOfferDialog } from "@/components/ui/MakeOfferDialog";
 import { useNotification } from "@/context/NotificationContext";
+import { useAuth } from "@/context/AuthContext";
 
 type Request = { id: string; user_id: string; title: string; description: string | null; budget: number; profiles: { full_name: string | null; avatar_url: string | null; } | null; };
 
@@ -22,15 +22,13 @@ export default function RequestDetailPage() {
     const { showNotification } = useNotification();
     const requestId = params.requestId as string;
 
+    const { user } = useAuth();
     const [request, setRequest] = useState<Request | null>(null);
-    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
 
             const { data: requestData, error } = await supabase.from('requests').select(`*, profiles (full_name, avatar_url)`).eq('id', requestId).single();
             
@@ -50,7 +48,7 @@ export default function RequestDetailPage() {
         };
 
         if (requestId) fetchData();
-    }, [requestId, supabase, router]);
+    }, [requestId, supabase, router, user]);
 
     const handleSubmitOffer = async (price: number, description: string) => {
         if (!user) { router.push('/login'); return; }

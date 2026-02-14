@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from "@/context/AuthContext";
 
 type Order = {
     id: number | string;
@@ -24,12 +25,12 @@ const formatStatus = (status: string) => {
 
 export default function BuyingOrdersPage() {
     const supabase = createClient();
+    const { user } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchOrders = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 setLoading(false);
                 return;
@@ -49,7 +50,7 @@ export default function BuyingOrdersPage() {
             setLoading(false);
         };
         fetchOrders();
-    }, [supabase]);
+    }, [supabase, user]);
 
     // 1. Filter orders into active and completed lists
     const activeOrders = orders.filter(order => order.status !== 'completed');

@@ -5,8 +5,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
 import { createClient } from "@/utils/supabase/client";
-import { User } from "@supabase/supabase-js";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrderActions } from "@/components/OrderActions";
 import { OrderChat } from "@/components/OrderChat";
@@ -35,8 +35,8 @@ export default function OrderPage() {
     const searchParams = useSearchParams(); // Hook to read URL params
     const orderId = params.orderId as string;
 
+    const { user } = useAuth();
     const [order, setOrder] = useState<OrderWithDetails | null>(null);
-    const [user, setUser] = useState<User | null>(null);
     const [requirements, setRequirements] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -57,12 +57,10 @@ export default function OrderPage() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 router.push('/login');
                 return;
             }
-            setUser(user);
 
             const { data: orderData, error: orderError } = await supabase
                 .from('orders')
@@ -93,7 +91,7 @@ export default function OrderPage() {
             setLoading(false);
         };
         fetchData();
-    }, [orderId, router, supabase]);
+    }, [orderId, router, supabase, user]);
 
     useEffect(() => {
         markNotificationsAsRead();

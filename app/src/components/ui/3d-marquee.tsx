@@ -59,7 +59,7 @@ export const ThreeDMarquee = <T extends any>({
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 1.2, ease: "easeOut" },
+      transition: { duration: 1.2, ease: "easeOut" as const },
     },
   };
 
@@ -68,7 +68,7 @@ export const ThreeDMarquee = <T extends any>({
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 1.2, ease: "easeOut" },
+      transition: { duration: 1.2, ease: "easeOut" as const },
     },
   };
 

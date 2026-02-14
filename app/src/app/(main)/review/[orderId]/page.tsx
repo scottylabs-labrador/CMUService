@@ -6,6 +6,7 @@ import { useState, MouseEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ import {
 export default function ReviewPage() {
   const supabase = createClient();
   const router = useRouter();
+  const { user } = useAuth();
   const params = useParams();
   const orderId = params.orderId as string;
 
@@ -57,9 +59,6 @@ export default function ReviewPage() {
     setError(null);
     setIsSubmitting(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
     if (!user) {
       router.push("/login");
       return;

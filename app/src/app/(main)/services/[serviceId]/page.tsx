@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ChevronLeft, Edit, Star } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { User } from "@supabase/supabase-js";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/context/AuthContext";
 
 type Service = {
     id: string;
@@ -43,15 +43,13 @@ export default function ServiceDetailPage() {
     const params = useParams();
     const serviceId = params.serviceId as string;
 
+    const { user } = useAuth();
     const [service, setService] = useState<Service | null>(null);
     const [reviews, setReviews] = useState<ReviewWithProfile[]>([]);
-    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
 
             const { data: serviceData, error: serviceError } = await supabase
                 .from('services_with_ratings')
@@ -79,7 +77,7 @@ export default function ServiceDetailPage() {
         };
         
         if (serviceId) fetchData();
-    }, [serviceId, supabase]);
+    }, [serviceId, supabase, user]);
 
     if (loading) return <div className="p-4 container mx-auto">Loading service...</div>;
     if (!service) return <div className="p-4 container mx-auto">Service not found.</div>;

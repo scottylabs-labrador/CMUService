@@ -10,12 +10,14 @@ import { useRouter } from "next/navigation";
 import { useState, FormEvent, ChangeEvent } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
 
 // Note: No longer importing getPresignedUploadUrl since we use the API route now
 
 export default function CreateServicePage() {
   const supabase = createClient();
   const router = useRouter();
+  const { user } = useAuth();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -52,10 +54,6 @@ export default function CreateServicePage() {
     event.preventDefault();
     setError(null);
     setIsSubmitting(true);
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
 
     if (!user) {
       setError("You must be logged in to create a service.");

@@ -9,6 +9,7 @@ import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 type Request = {
   id: string;
@@ -24,6 +25,7 @@ type Request = {
 
 function BrowseRequestsContent() {
   const supabase = createClient();
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
 
@@ -32,8 +34,6 @@ function BrowseRequestsContent() {
 
   useEffect(() => {
     const fetchRequests = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-
         let query;
         if (searchQuery) {
             query = supabase.from('requests').select('*, profiles (full_name, avatar_url)').ilike('title', `%${searchQuery}%`);
@@ -55,7 +55,7 @@ function BrowseRequestsContent() {
         setLoading(false);
     };
     fetchRequests();
-  }, [searchQuery, supabase]);
+  }, [searchQuery, supabase, user]);
 
   if (loading) return <div className="p-4 container mx-auto">Loading requests...</div>;
   

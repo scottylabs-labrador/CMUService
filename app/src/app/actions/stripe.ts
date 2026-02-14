@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 
 // Initialize Stripe with your secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-11-20.acacia', // Or use '2023-10-16' if you haven't updated in Stripe dashboard yet
+  apiVersion: '2025-11-17.clover',
 });
 
 export async function createCheckoutSession(orderId: string, price: number, serviceTitle: string) {

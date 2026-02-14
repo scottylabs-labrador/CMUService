@@ -11,10 +11,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, FormEvent } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CreateRequestPage() {
     const supabase = createClient();
-    const router = useRouter(); 
+    const router = useRouter();
+    const { user } = useAuth();
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState(""); // Add state for description
@@ -25,7 +27,6 @@ export default function CreateRequestPage() {
         event.preventDefault(); 
         setError(null);
 
-        const { data: { user } } = await supabase.auth.getUser();
         if (!user) { /* ... error handling ... */ return; }
         if (!title || !budget) { /* ... error handling ... */ return; }
 

@@ -5,20 +5,20 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 
 export default async function MyServicesPage() {
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
         return redirect('/login');
     }
 
     const { data: services, error } = await supabase
         .from('services')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
     if (error) {
         console.error("Error fetching services:", error);
@@ -45,7 +45,7 @@ export default async function MyServicesPage() {
                             <ServiceCard
                                 title={service.title}
                                 price={service.price}
-                                sellerName={user.email || "Your Listing"}
+                                sellerName={"Your Listing"}
                                 sellerId={service.user_id || "Unknown"}
                                 sellerAvatarUrl={service.seller_avatar_url || "https://placehold.co/100x100/e0e7ff/4338ca?text=Avatar"}
                                 // Use the real image_url, or fall back to the placeholder

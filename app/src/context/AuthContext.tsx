@@ -2,19 +2,15 @@
 
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from "react";
-import { createClient } from "@/utils/supabase/client"; // Use the new client-side client
-import { User, SupabaseClient } from "@supabase/supabase-js";
+import React, { createContext, useContext, ReactNode } from "react";
+import { useUser, useClerk } from "@clerk/nextjs";
 
 interface AuthContextType {
-  supabase: SupabaseClient;
-  user: User | null;
+  user: {
+    id: string;
+    email?: string;
+    fullName?: string;
+  } | null;
   isLoggedIn: boolean;
   logout: () => Promise<void>;
 }
@@ -22,41 +18,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const supabase = createClient();
-  const [user, setUser] = useState<User | null>(null);
-  const isLoggedIn = !!user;
+  const { user: clerkUser, isSignedIn } = useUser();
+  const { signOut } = useClerk();
 
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        setUser(user);
-      } catch (error) {
-        console.warn("Failed to fetch user:", error);
-        setUser(null);
+  const user = isSignedIn && clerkUser
+    ? {
+        id: clerkUser.id,
+        email: clerkUser.primaryEmailAddress?.emailAddress,
+        fullName: clerkUser.fullName ?? undefined,
       }
-    };
-    checkUser();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-      },
-    );
-
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, [supabase]);
+    : null;
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ supabase, user, isLoggedIn, logout }}>
+    <AuthContext.Provider value={{ user, isLoggedIn: !!user, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -5,8 +5,8 @@
 import { useState, useEffect, FormEvent, ChangeEvent, useRef } from "react";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
-import { User } from "@supabase/supabase-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -35,9 +35,9 @@ function dataURLtoFile(dataurl: string, filename: string): File {
 export default function SettingsPage() {
     const supabase = createClient();
     const { showNotification } = useNotification();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [user, setUser] = useState<User | null>(null);
     
     const [fullName, setFullName] = useState("");
     const [bio, setBio] = useState("");
@@ -55,10 +55,7 @@ export default function SettingsPage() {
 
     useEffect(() => {
         const fetchProfile = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                setUser(user);
-                
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { data: profile, error } = await supabase
                     .from('profiles')
@@ -73,10 +70,10 @@ export default function SettingsPage() {
                     setAvatarPreview(profile.avatar_url);
                 }
             }
-            setLoading(false); // This line fixes the "stuck on loading" issue
+            setLoading(false);
         };
         fetchProfile();
-    }, [supabase]);
+    }, [supabase, user]);
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];

@@ -10,6 +10,7 @@ import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from "@/context/AuthContext";
 
 // 1. Update the type to include the 'id' for each order
 type Request = {
@@ -22,12 +23,12 @@ type Request = {
 
 export default function MyRequestsPage() {
     const supabase = createClient();
+    const { user } = useAuth();
     const [requests, setRequests] = useState<Request[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchRequests = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 setLoading(false);
                 return;
@@ -51,7 +52,7 @@ export default function MyRequestsPage() {
             setLoading(false);
         };
         fetchRequests();
-    }, [supabase]);
+    }, [supabase, user]);
 
     const openRequests = requests.filter(req => req.status === 'open' && req.orders.length === 0);
     const inProgressRequests = requests.filter(req => req.status === 'closed' && req.orders.some(o => o.status !== 'completed'));

@@ -16,8 +16,8 @@ import {
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { User } from "@supabase/supabase-js";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
 type ProcessedNotification = {
   order_id: string;
@@ -47,8 +47,8 @@ const formatTimeAgo = (dateString: string) => {
 export default function DashboardPage() {
   const supabase = createClient();
   const router = useRouter();
+  const { user } = useAuth();
 
-  const [user, setUser] = useState<User | null>(null);
   const [serviceCount, setServiceCount] = useState(0);
   const [requestCount, setRequestCount] = useState(0);
   const [activeSalesCount, setActiveSalesCount] = useState(0);
@@ -60,14 +60,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         router.push("/login");
         return;
       }
-      setUser(user);
 
       // Fetch counts
       const { count: sCount } = await supabase
@@ -147,7 +143,7 @@ export default function DashboardPage() {
       setLoading(false);
     };
     fetchData();
-  }, [supabase, router]);
+  }, [supabase, router, user]);
 
   const handleClearNotifications = async () => {
     if (!user) return;

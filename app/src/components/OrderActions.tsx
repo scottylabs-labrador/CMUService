@@ -8,9 +8,7 @@ import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import { ConfirmationDialog } from "./ui/ConfirmationDialog";
 import { RevisionRequestDialog } from "./ui/RevisionRequestDialog";
-import { User } from "@supabase/supabase-js";
 import Link from "next/link";
-// NEW IMPORTS
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { createCheckoutSession } from "@/app/actions/stripe";
 
@@ -25,7 +23,7 @@ type Order = {
 
 interface OrderActionsProps {
     order: Order;
-    user: User;
+    user: { id: string };
 }
 
 export function OrderActions({ order, user }: OrderActionsProps) {

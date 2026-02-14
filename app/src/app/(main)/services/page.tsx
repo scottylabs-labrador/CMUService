@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const CATEGORIES = [
   "ALL",
@@ -39,6 +40,7 @@ type Service = {
 
 function BrowseServicesContent() {
   const supabase = createClient();
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("q") || "";
 
@@ -49,10 +51,6 @@ function BrowseServicesContent() {
 
   useEffect(() => {
     const fetchServices = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
       let query;
       if (searchQuery) {
         query = supabase
@@ -84,7 +82,7 @@ function BrowseServicesContent() {
       setLoading(false);
     };
     fetchServices();
-  }, [searchQuery, supabase]);
+  }, [searchQuery, supabase, user]);
 
   // Filter by category
   const filteredServices = services.filter((service) => {

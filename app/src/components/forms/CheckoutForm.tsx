@@ -4,7 +4,6 @@
 
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -16,7 +15,7 @@ type Service = {
 
 interface CheckoutFormProps {
     service: Service;
-    user: User;
+    user: { id: string };
 }
 
 export function CheckoutForm({ service, user }: CheckoutFormProps) {

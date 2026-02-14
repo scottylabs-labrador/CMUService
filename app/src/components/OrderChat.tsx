@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { User } from "@supabase/supabase-js";
-import { getPresignedUploadUrl } from "@/app/actions/storage"; 
+import { getPresignedUploadUrl } from "@/app/actions/storage";
 import {
   Card,
   CardContent,
@@ -29,7 +28,7 @@ type Message = {
 
 interface OrderChatProps {
   order: { id: string; buyer_id: string; seller_id: string };
-  user: User;
+  user: { id: string };
 }
 
 export function OrderChat({ order, user }: OrderChatProps) {

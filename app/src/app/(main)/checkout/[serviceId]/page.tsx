@@ -6,17 +6,15 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { CheckoutForm } from "@/components/forms/CheckoutForm";
-import { User } from "@supabase/supabase-js"; // Import User type
+import { auth } from "@clerk/nextjs/server";
 
 // The fix is to await params in Next.js 15+
 export default async function CheckoutPage({ params }: { params: Promise<{ serviceId: string }> }) {
     const { serviceId } = await params;
     const supabase = await createClient();
 
-    // Fetch user first and handle potential errors
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-        // Redirect to login if user fetch fails or no user exists
+    const { userId } = await auth();
+    if (!userId) {
         return redirect('/login');
     }
 
@@ -35,7 +33,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ servi
     }
 
     // Prevent user from buying their own service
-    if (service.user_id === user.id) {
+    if (service.user_id === userId) {
         return redirect(`/services/${service.id}`);
     }
 
@@ -70,8 +68,8 @@ export default async function CheckoutPage({ params }: { params: Promise<{ servi
                     </div>
                 </CardContent>
                 <CardFooter>
-                    {/* Ensure service and user are passed correctly, cast user type */}
-                    <CheckoutForm service={service} user={user as User} /> 
+                    {/* Ensure service and user are passed correctly */}
+                    <CheckoutForm service={service} user={{ id: userId } as any} />
                 </CardFooter>
             </Card>
             <div className="mt-4 text-center">
