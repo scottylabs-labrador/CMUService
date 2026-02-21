@@ -16,10 +16,7 @@ export default function LoginPage() {
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-6 sm:px-12 lg:px-24 py-8">
-        <SignIn
-          routing="hash"
-          fallbackRedirectUrl="/dashboard"
-        />
+        <SignIn />
       </div>
     </div>
   );

@@ -16,10 +16,7 @@ export default function RegisterPage() {
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-6 sm:px-12 lg:px-24 py-8">
-        <SignUp
-          routing="hash"
-          fallbackRedirectUrl="/dashboard"
-        />
+        <SignUp />
       </div>
     </div>
   );

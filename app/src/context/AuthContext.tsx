@@ -10,6 +10,7 @@ interface AuthContextType {
     id: string;
     email?: string;
     fullName?: string;
+    imageUrl?: string;
   } | null;
   isLoggedIn: boolean;
   logout: () => Promise<void>;
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: clerkUser.id,
         email: clerkUser.primaryEmailAddress?.emailAddress,
         fullName: clerkUser.fullName ?? undefined,
+        imageUrl: clerkUser.imageUrl ?? undefined,
       }
     : null;
 
