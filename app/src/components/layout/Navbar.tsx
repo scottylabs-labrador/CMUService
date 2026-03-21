@@ -97,7 +97,7 @@ export function Navbar() {
     router.push("/");
   };
 
-  // Avatar image source: Supabase custom > Clerk OAuth > fallback icon
+  // Avatar image source: Supabase custom > Keycloak OAuth > fallback icon
   const profileImage = avatarUrl || user?.imageUrl || null;
 
   return (

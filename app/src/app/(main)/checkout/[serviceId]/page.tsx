@@ -6,14 +6,16 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { CheckoutForm } from "@/components/forms/CheckoutForm";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 // The fix is to await params in Next.js 15+
 export default async function CheckoutPage({ params }: { params: Promise<{ serviceId: string }> }) {
     const { serviceId } = await params;
     const supabase = await createClient();
 
-    const { userId } = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
+    const userId = session?.user.id;
     if (!userId) {
         return redirect('/login');
     }

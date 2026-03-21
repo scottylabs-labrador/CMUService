@@ -1,10 +1,7 @@
-// src/context/AuthContext.tsx
-
 "use client";
 
-import React, { createContext, useContext, useEffect, ReactNode } from "react";
-import { useUser, useClerk } from "@clerk/nextjs";
-import { createClient } from "@/utils/supabase/client";
+import React, { createContext, useContext, ReactNode } from "react";
+import { authClient } from "@/lib/auth-client";
 
 interface AuthContextType {
   user: {
@@ -20,41 +17,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { user: clerkUser, isSignedIn } = useUser();
-  const { signOut } = useClerk();
+  const { data: session } = authClient.useSession();
 
-  const user = isSignedIn && clerkUser
+  const user = session?.user
     ? {
-        id: clerkUser.id,
-        email: clerkUser.primaryEmailAddress?.emailAddress,
-        fullName: clerkUser.fullName ?? undefined,
-        imageUrl: clerkUser.imageUrl ?? undefined,
+        id: session.user.id,
+        email: session.user.email ?? undefined,
+        fullName: session.user.name ?? undefined,
+        imageUrl: session.user.image ?? undefined,
       }
     : null;
 
-  // When a user signs in, ensure their profile row exists in Supabase.
-  // ignoreDuplicates: true means we never overwrite a profile they've already customized.
-  useEffect(() => {
-    if (!isSignedIn || !clerkUser) return;
-
-    const supabase = createClient();
-    supabase
-      .from("profiles")
-      .upsert(
-        {
-          id: clerkUser.id,
-          full_name: clerkUser.fullName ?? "",
-          avatar_url: clerkUser.imageUrl ?? null,
-        },
-        { onConflict: "id", ignoreDuplicates: true }
-      )
-      .then(({ error }) => {
-        if (error) console.warn("Failed to ensure profile:", error.message);
-      });
-  }, [isSignedIn, clerkUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const logout = async () => {
-    await signOut();
+    await authClient.signOut();
   };
 
   return (

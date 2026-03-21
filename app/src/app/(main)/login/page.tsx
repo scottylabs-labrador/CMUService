@@ -1,6 +1,8 @@
-import { SignUp } from "@clerk/nextjs";
+"use client";
+import { authClient } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
 
-export default function RegisterPage() {
+export default function LoginPage() {
   return (
     <div className="relative min-h-screen w-full bg-[#F5F5F5] dark:bg-[#0A0A0A] overflow-hidden">
       {/* Animated Gradient Orb */}
@@ -16,7 +18,21 @@ export default function RegisterPage() {
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex items-center justify-center px-6 sm:px-12 lg:px-24 py-8">
-        <SignUp />
+        <div className="flex flex-col items-center gap-6">
+          <h1 className="text-3xl font-bold">Sign in to CMUService</h1>
+          <Button
+            size="lg"
+            onClick={() =>
+              authClient.signIn.oauth2({
+                providerId: "keycloak",
+                callbackURL: "/dashboard",
+              })
+            }
+            className="bg-gradient-to-r from-[#FF4D00] to-[#FF8534] text-white hover:opacity-90"
+          >
+            Sign in with CMU
+          </Button>
+        </div>
       </div>
     </div>
   );
