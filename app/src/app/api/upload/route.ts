@@ -39,8 +39,9 @@ export async function POST(req: NextRequest) {
     
     return NextResponse.json({ url: publicUrl });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Upload Error:", error); // Watch this log
-    return NextResponse.json({ error: error.message, code: error.code }, { status: 500 });
+    const err = error as { message?: string; code?: string };
+    return NextResponse.json({ error: err.message, code: err.code }, { status: 500 });
   }
 }

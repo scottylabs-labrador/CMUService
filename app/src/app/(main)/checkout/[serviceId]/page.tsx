@@ -71,6 +71,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ servi
                 </CardContent>
                 <CardFooter>
                     {/* Ensure service and user are passed correctly */}
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <CheckoutForm service={service} user={{ id: userId } as any} />
                 </CardFooter>
             </Card>

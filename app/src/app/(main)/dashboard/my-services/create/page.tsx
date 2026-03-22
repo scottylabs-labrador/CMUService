@@ -84,7 +84,7 @@ export default function CreateServicePage() {
         const data = await response.json();
         imageUrl = data.url;
         
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Upload failed:", err);
         setError("Failed to upload image. Please try again.");
         setIsSubmitting(false);

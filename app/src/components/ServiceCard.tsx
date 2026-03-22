@@ -5,13 +5,12 @@
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Star, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useRouter } from "next/navigation";
 import { Badge } from "./ui/badge";
@@ -33,15 +32,12 @@ type ServiceCardProps = {
 export function ServiceCard(props: ServiceCardProps) {
   const {
     title,
-    description,
     category,
     price,
     sellerId,
     sellerName,
     sellerAvatarUrl,
     imageUrl,
-    avgRating = 0,
-    reviewCount = 0,
     onDelete,
   } = props;
   const router = useRouter();

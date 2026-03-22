@@ -152,9 +152,9 @@ export function OrderChat({ order, user }: OrderChatProps) {
       setNewMessage("");
       removeImage();
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ Send Error:", error);
-      alert(`Failed to send: ${error.message}`);
+      alert(`Failed to send: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsUploading(false);
     }
@@ -187,11 +187,12 @@ export function OrderChat({ order, user }: OrderChatProps) {
                   // FIX: Use fixed width 'w-64' instead of 'w-full' to prevent flexbox collapse
                   <div className="relative w-64 h-48 bg-black/10">
                     {/* FIX: Use standard img tag to bypass Next.js Strict Config */}
-                    <img 
-                      src={message.image_url} 
-                      alt="Chat image" 
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={message.image_url}
+                      alt="Chat image"
                       className="w-full h-full object-cover"
-                      onError={(e) => console.error("Image failed to load:", message.image_url)}
+                      onError={() => console.error("Image failed to load:", message.image_url)}
                     />
                   </div>
                 )}
@@ -211,6 +212,7 @@ export function OrderChat({ order, user }: OrderChatProps) {
         {imagePreview && (
           <div className="relative w-24 h-24 rounded-lg overflow-hidden border group">
             {/* Preview uses standard img tag too */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
             <Button size="sm" variant="destructive" className="absolute top-1 right-1 w-6 h-6 p-0 opacity-90 hover:opacity-100" onClick={removeImage}>
               <X className="w-3 h-3" />

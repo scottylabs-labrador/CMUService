@@ -35,8 +35,8 @@ export async function getPresignedUploadUrl(fileType: string) {
     
     return { success: true, signedUrl, publicUrl, fileName };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [SERVER ERROR] S3 Signing Failed:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 }

@@ -140,9 +140,9 @@ export default function EditServicePage() {
         // 3. Set the new URL
         updatedImageUrl = data.url;
 
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Image update failed:", err);
-        setError("Error uploading new image: " + err.message);
+        setError("Error uploading new image: " + (err instanceof Error ? err.message : String(err)));
         setIsSubmitting(false);
         return;
       }

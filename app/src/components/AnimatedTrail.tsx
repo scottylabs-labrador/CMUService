@@ -7,13 +7,6 @@ export default function AnimatedTrail() {
     <div className="relative w-full h-full overflow-visible flex items-center justify-center opacity-20">
       <div className="relative w-full h-full flex items-center justify-center">
         {cards.map((_, i) => {
-          // Create arc pattern for flourish
-          const angle = ((i - 2.5) / 5) * 120; // 120 degree spread
-          const distance = 300; // Distance from center
-          const spreadX = Math.sin((angle * Math.PI) / 180) * distance;
-          const spreadY = -Math.abs(Math.cos((angle * Math.PI) / 180)) * 100; // Slight upward curve
-          const rotation = angle * 0.5; // Rotate cards along the arc
-
           return (
             <div
               key={i}

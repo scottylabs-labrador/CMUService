@@ -555,9 +555,11 @@ export default function LiquidEther({
 }
 `;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     type Uniforms = Record<string, { value: any }>;
 
     class ShaderPass {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       props: any;
       uniforms?: Uniforms;
       scene: THREE.Scene | null = null;
@@ -565,10 +567,12 @@ export default function LiquidEther({
       material: THREE.RawShaderMaterial | null = null;
       geometry: THREE.BufferGeometry | null = null;
       plane: THREE.Mesh | null = null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(props: any) {
         this.props = props || {};
         this.uniforms = this.props.material?.uniforms;
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
       init(..._args: any[]) {
         this.scene = new THREE.Scene();
         this.camera = new THREE.Camera();
@@ -579,6 +583,7 @@ export default function LiquidEther({
           this.scene.add(this.plane);
         }
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
       update(..._args: any[]) {
         if (!Common.renderer || !this.scene || !this.camera) return;
         Common.renderer.setRenderTarget(this.props.output || null);
@@ -589,6 +594,7 @@ export default function LiquidEther({
 
     class Advection extends ShaderPass {
       line!: THREE.LineSegments;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(simProps: any) {
         super({
           material: {
@@ -626,6 +632,7 @@ export default function LiquidEther({
         this.line = new THREE.LineSegments(boundaryG, boundaryM);
         this.scene!.add(this.line);
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       update(...args: any[]) {
         const { dt, isBounce, BFECC } = (args[0] || {}) as { dt?: number; isBounce?: boolean; BFECC?: boolean };
         if (!this.uniforms) return;
@@ -638,10 +645,12 @@ export default function LiquidEther({
 
     class ExternalForce extends ShaderPass {
       mouse!: THREE.Mesh;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(simProps: any) {
         super({ output: simProps.dst });
         this.init(simProps);
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       init(simProps: any) {
         super.init();
         const mouseG = new THREE.PlaneGeometry(1, 1);
@@ -660,6 +669,7 @@ export default function LiquidEther({
         this.mouse = new THREE.Mesh(mouseG, mouseM);
         this.scene!.add(this.mouse);
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       update(...args: any[]) {
         const props = args[0] || {};
         const forceX = (Mouse.diff.x / 2) * (props.mouse_force || 0);
@@ -685,6 +695,7 @@ export default function LiquidEther({
     }
 
     class Viscous extends ShaderPass {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(simProps: any) {
         super({
           material: {
@@ -705,9 +716,11 @@ export default function LiquidEther({
         });
         this.init();
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       update(...args: any[]) {
         const { viscous, iterations, dt } = (args[0] || {}) as { viscous?: number; iterations?: number; dt?: number };
         if (!this.uniforms) return;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let fbo_in: any, fbo_out: any;
         if (typeof viscous === 'number') this.uniforms.v.value = viscous;
         const iter = iterations ?? 0;
@@ -729,6 +742,7 @@ export default function LiquidEther({
     }
 
     class Divergence extends ShaderPass {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(simProps: any) {
         super({
           material: {
@@ -745,7 +759,9 @@ export default function LiquidEther({
         });
         this.init();
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       update(...args: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { vel } = (args[0] || {}) as { vel?: any };
         if (this.uniforms && vel) {
           this.uniforms.velocity.value = vel.texture;
@@ -755,6 +771,7 @@ export default function LiquidEther({
     }
 
     class Poisson extends ShaderPass {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(simProps: any) {
         super({
           material: {
@@ -773,8 +790,10 @@ export default function LiquidEther({
         });
         this.init();
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       update(...args: any[]) {
         const { iterations } = (args[0] || {}) as { iterations?: number };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let p_in: any, p_out: any;
         const iter = iterations ?? 0;
         for (let i = 0; i < iter; i++) {
@@ -794,6 +813,7 @@ export default function LiquidEther({
     }
 
     class Pressure extends ShaderPass {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(simProps: any) {
         super({
           material: {
@@ -811,7 +831,9 @@ export default function LiquidEther({
         });
         this.init();
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       update(...args: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { vel, pressure } = (args[0] || {}) as { vel?: any; pressure?: any };
         if (this.uniforms && vel && pressure) {
           this.uniforms.velocity.value = vel.texture;
@@ -947,6 +969,7 @@ export default function LiquidEther({
           mouse_force: this.options.mouse_force,
           cellScale: this.cellScale
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let vel: any = this.fbos.vel_1;
         if (this.options.isViscous) {
           vel = this.viscous.update({
@@ -1002,6 +1025,7 @@ export default function LiquidEther({
     }
 
     class WebGLManager implements LiquidEtherWebGL {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       props: any;
       output!: Output;
       autoDriver?: AutoDriver;
@@ -1010,6 +1034,7 @@ export default function LiquidEther({
       private _loop = this.loop.bind(this);
       private _resize = this.resize.bind(this);
       private _onVisibility?: () => void;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(props: any) {
         this.props = props;
         Common.init(props.$wrapper);
@@ -1020,6 +1045,7 @@ export default function LiquidEther({
           this.lastUserInteraction = performance.now();
           if (this.autoDriver) this.autoDriver.forceStop();
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.autoDriver = new AutoDriver(Mouse, this as any, {
           enabled: props.autoDemo,
           speed: props.autoSpeed,

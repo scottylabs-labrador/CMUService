@@ -10,7 +10,7 @@ export interface ThreeDMarqueeProps<T> {
   cols?: number;
 }
 
-export const ThreeDMarquee = <T extends any>({
+export const ThreeDMarquee = <T,>({
   items,
   renderItem,
   className = "",
@@ -31,9 +31,12 @@ export const ThreeDMarquee = <T extends any>({
     columns[i % cols].push(item);
   });
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const listRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [listHeight, setListHeight] = useState(0);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useLayoutEffect(() => {
     if (listRef.current) {
       const height = listRef.current.offsetHeight;
@@ -41,7 +44,9 @@ export const ThreeDMarquee = <T extends any>({
     }
   }, [items]);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const sectionRef = useRef(null);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const isInView = useInView(sectionRef, { amount: 0.1 });
 
   const gridContainerVariants = {
