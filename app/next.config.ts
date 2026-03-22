@@ -1,6 +1,10 @@
+import path from 'path';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Use the 'experimental' block for Next.js 14
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   experimental: {
     ppr: false,
   },
@@ -42,4 +46,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

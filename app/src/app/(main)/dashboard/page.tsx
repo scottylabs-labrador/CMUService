@@ -47,7 +47,7 @@ const formatTimeAgo = (dateString: string) => {
 export default function DashboardPage() {
   const supabase = createClient();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
 
   const [serviceCount, setServiceCount] = useState(0);
   const [requestCount, setRequestCount] = useState(0);
@@ -60,6 +60,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (isLoading) return;
       if (!user) {
         router.push("/login");
         return;
@@ -143,7 +144,7 @@ export default function DashboardPage() {
       setLoading(false);
     };
     fetchData();
-  }, [supabase, router, user]);
+  }, [supabase, router, user, isLoading]);
 
   const handleClearNotifications = async () => {
     if (!user) return;

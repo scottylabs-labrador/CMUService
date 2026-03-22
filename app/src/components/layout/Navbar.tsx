@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { User, LayoutDashboard, LogOut } from "lucide-react";
+import { User, LayoutDashboard, LogOut, CircleUser } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
@@ -165,6 +165,14 @@ export function Navbar() {
                   >
                     <LayoutDashboard className="w-4 h-4 text-orange-400" />
                     Dashboard
+                  </Link>
+                  <Link
+                    href={`/profile/${user?.id}`}
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-orange-50 transition-colors"
+                  >
+                    <CircleUser className="w-4 h-4 text-orange-400" />
+                    My Profile
                   </Link>
                   <hr className="my-1 border-orange-100" />
                   <button

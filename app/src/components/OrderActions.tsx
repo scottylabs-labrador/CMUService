@@ -59,6 +59,7 @@ export function OrderActions({ order, user }: OrderActionsProps) {
             await supabase.from('notifications').insert({ recipient_id: order.seller_id, order_id: order.id, notification_type: 'requirements_submitted', content: 'The buyer has submitted the requirements' });
         }
         setIsSubmitting(false);
+        router.refresh();
     };
 
     const handleCancelOrder = async () => {

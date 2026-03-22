@@ -22,10 +22,8 @@ type Service = {
     image_url: string | null;
     avg_rating: number;
     review_count: number;
-    profiles: {
-      full_name: string | null;
-      avatar_url: string | null;
-    } | null;
+    full_name: string | null;
+    avatar_url: string | null;
 };
 
 type ReviewWithProfile = {
@@ -53,7 +51,7 @@ export default function ServiceDetailPage() {
 
             const { data: serviceData, error: serviceError } = await supabase
                 .from('services_with_ratings')
-                .select(`*, profiles (full_name, avatar_url)`)
+                .select('*')
                 .eq('id', serviceId)
                 .single();
             
@@ -131,10 +129,10 @@ export default function ServiceDetailPage() {
                             <div className="flex items-center gap-2">
                                 <p className="text-sm text-muted-foreground group-hover:text-primary">by</p>
                                 <Avatar className="h-6 w-6">
-                                    <AvatarImage src={service.profiles?.avatar_url || undefined} />
-                                    <AvatarFallback>{service.profiles?.full_name ? service.profiles.full_name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
+                                    <AvatarImage src={service.avatar_url || undefined} />
+                                    <AvatarFallback>{service.full_name ? service.full_name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
                                 </Avatar>
-                                <p className="text-md font-medium group-hover:underline">{service.profiles?.full_name || 'A CMU Student'}</p>
+                                <p className="text-md font-medium group-hover:underline">{service.full_name || 'A CMU Student'}</p>
                             </div>
                         </Link>
                          {service.review_count > 0 && (

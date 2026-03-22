@@ -14,9 +14,8 @@ type Order = {
     id: number | string;
     amount: number;
     status: string;
-    services: {
-        title: string;
-    } | null;
+    services: { title: string; } | null;
+    requests: { title: string; } | null;
 };
 
 const formatStatus = (status: string) => {
@@ -38,7 +37,7 @@ export default function BuyingOrdersPage() {
 
             const { data, error } = await supabase
                 .from('orders')
-                .select(`*, services (title)`)
+                .select(`*, services (title), requests (title)`)
                 .eq('buyer_id', user.id)
                 .order('created_at', { ascending: false });
             
@@ -74,7 +73,7 @@ export default function BuyingOrdersPage() {
                             <Card className="hover:bg-muted/50 transition-colors">
                                 <CardHeader>
                                     <div className="flex justify-between items-start">
-                                        <CardTitle className="text-lg">{order.services?.title || 'Service not found'}</CardTitle>
+                                        <CardTitle className="text-lg">{order.services?.title || order.requests?.title || 'Order'}</CardTitle>
                                         <Badge variant="secondary">{formatStatus(order.status)}</Badge>
                                     </div>
                                 </CardHeader>
@@ -103,7 +102,7 @@ export default function BuyingOrdersPage() {
                             <Card className="hover:bg-muted/50 transition-colors opacity-70">
                                 <CardHeader>
                                     <div className="flex justify-between items-start">
-                                        <CardTitle className="text-lg">{order.services?.title || 'Service not found'}</CardTitle>
+                                        <CardTitle className="text-lg">{order.services?.title || order.requests?.title || 'Order'}</CardTitle>
                                         <Badge>{formatStatus(order.status)}</Badge>
                                     </div>
                                 </CardHeader>

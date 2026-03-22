@@ -13,13 +13,15 @@ function isPublicRoute(req: NextRequest): boolean {
   );
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   if (isPublicRoute(req)) return NextResponse.next();
 
-  const { data: session } = await betterFetch<Session>("/api/auth/get-session", {
+  const { data: session, error } = await betterFetch<Session>("/api/auth/get-session", {
     baseURL: req.nextUrl.origin,
     headers: { cookie: req.headers.get("cookie") ?? "" },
   });
+
+  console.log("[proxy] session:", JSON.stringify(session), "error:", JSON.stringify(error), "cookies:", req.headers.get("cookie")?.slice(0, 100));
 
   if (!session) {
     return NextResponse.redirect(new URL("/login", req.url));

@@ -32,10 +32,8 @@ type Service = {
   image_url: string | null;
   avg_rating: number;
   review_count: number;
-  profiles: {
-    full_name: string | null;
-    avatar_url: string | null;
-  } | null;
+  full_name: string | null;
+  avatar_url: string | null;
 };
 
 function BrowseServicesContent() {
@@ -55,12 +53,12 @@ function BrowseServicesContent() {
       if (searchQuery) {
         query = supabase
           .from("services_with_ratings")
-          .select("*, profiles (full_name, avatar_url)")
+          .select("*")
           .ilike("title", `%${searchQuery}%`);
       } else {
         query = supabase
           .from("services_with_ratings")
-          .select("*, profiles (full_name, avatar_url)");
+          .select("*");
       }
 
       const { data, error } = await query;
@@ -220,8 +218,8 @@ function BrowseServicesContent() {
                   category={service.category}
                   price={service.price}
                   sellerId={service.user_id}
-                  sellerName={service.profiles?.full_name || "A CMU Student"}
-                  sellerAvatarUrl={service.profiles?.avatar_url || null}
+                  sellerName={service.full_name || "A CMU Student"}
+                  sellerAvatarUrl={service.avatar_url || null}
                   imageUrl={
                     service.image_url ||
                     "https://placehold.co/600x400/1a1a1a/ffffff?text=Service"

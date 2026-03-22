@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CMUService is a peer-to-peer service marketplace for CMU students to trade skills/services. Built with Next.js 15 App Router, Supabase (PostgreSQL + real-time), Clerk (auth), Stripe (payments), and MinIO (file storage).
+CMUService is a peer-to-peer service marketplace for CMU students to trade skills/services. Built with Next.js 15 App Router, Supabase (PostgreSQL + real-time), better-auth + Keycloak (auth), Stripe (payments), and MinIO (file storage).
 
 ## Commands
 

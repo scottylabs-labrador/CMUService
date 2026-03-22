@@ -11,13 +11,14 @@ interface AuthContextType {
     imageUrl?: string;
   } | null;
   isLoggedIn: boolean;
+  isLoading: boolean;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending: isLoading } = authClient.useSession();
 
   const user = session?.user
     ? {
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn: !!user, logout }}>
+    <AuthContext.Provider value={{ user, isLoggedIn: !!user, isLoading, logout }}>
       {children}
     </AuthContext.Provider>
   );

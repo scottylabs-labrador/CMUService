@@ -31,10 +31,8 @@ type Service = {
     image_url: string | null;
     avg_rating: number;
     review_count: number;
-    profiles: {
-        full_name: string | null;
-        avatar_url: string | null;
-    } | null;
+    full_name: string | null;
+    avatar_url: string | null;
 };
 
 type Request = {
@@ -81,7 +79,7 @@ export default function ProfilePage() {
 
             const { data: servicesData } = await supabase
                 .from('services_with_ratings')
-                .select('*, profiles (full_name, avatar_url)')
+                .select('*')
                 .eq('user_id', userId);
             
             if (servicesData) setServices(servicesData as Service[]);
@@ -159,8 +157,8 @@ export default function ProfilePage() {
                                     title={service.title}
                                     price={service.price}
                                     sellerId={service.user_id}
-                                    sellerName={service.profiles?.full_name || ''}
-                                    sellerAvatarUrl={service.profiles?.avatar_url || null}
+                                    sellerName={service.full_name || ''}
+                                    sellerAvatarUrl={service.avatar_url || null}
                                     imageUrl={service.image_url || "https://placehold.co/600x400/e0e7ff/4338ca?text=Service"}
                                     avgRating={service.avg_rating}
                                     reviewCount={service.review_count}
