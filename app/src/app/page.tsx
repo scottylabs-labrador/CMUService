@@ -38,7 +38,7 @@ export default function HomePage() {
         const supabase = createClient();
         const { data, error } = await supabase
           .from("services_with_ratings")
-          .select(`*, profiles (full_name, avatar_url)`)
+          .select("*")
           .order("created_at", { ascending: false })
           .limit(10);
 
