@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 const items = [
@@ -10,6 +11,7 @@ const items = [
     subtitle: "Find what you need",
     description: "Explore a wide range of services offered by your peers.",
     color: "from-orange-400 to-red-500",
+    image: "/discover.webp",
   },
   {
     id: 2,
@@ -17,6 +19,7 @@ const items = [
     subtitle: "Meet the community",
     description: "Chat directly with students and build lasting connections.",
     color: "from-pink-400 to-purple-500",
+    image: "/connect.jpg",
   },
   {
     id: 3,
@@ -24,6 +27,7 @@ const items = [
     subtitle: "Share your skills",
     description: "Offer your own expertise and trade services with others.",
     color: "from-blue-400 to-cyan-500",
+    image: "/exchange.jpg",
   },
   {
     id: 4,
@@ -31,6 +35,7 @@ const items = [
     subtitle: "Expand your horizons",
     description: "Learn new things and help the campus community thrive.",
     color: "from-emerald-400 to-green-500",
+    image: "/grow.jpg",
   },
 ];
 
@@ -114,22 +119,32 @@ export default function ScrollJourney() {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="group relative h-[60vh] w-[35vw] shrink-0 overflow-hidden rounded-3xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 transition-all hover:scale-[1.02] hover:shadow-2xl"
+                className="group relative h-[60vh] w-[35vw] shrink-0 overflow-hidden rounded-3xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 transition-all hover:scale-[1.02] hover:shadow-2xl flex flex-col"
               >
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-10 transition-opacity group-hover:opacity-20`}
-                />
-                <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                  <div className="mb-4">
-                    <span className="inline-block rounded-full bg-background/50 px-3 py-1 text-xs font-medium backdrop-blur-md">
+                {/* Image upper portion */}
+                <div className="relative w-full h-[55%] overflow-hidden">
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-20 transition-opacity group-hover:opacity-30`}
+                  />
+                </div>
+                {/* Text lower portion */}
+                <div className="flex flex-col justify-center p-8 flex-1">
+                  <div className="mb-3">
+                    <span className="inline-block rounded-full bg-neutral-200 dark:bg-neutral-800 px-3 py-1 text-xs font-medium">
                       0{item.id}
                     </span>
                   </div>
-                  <h3 className="mb-2 text-3xl font-bold">{item.title}</h3>
+                  <h3 className="mb-1 text-3xl font-bold">{item.title}</h3>
                   <p className="text-lg font-medium text-foreground/80">
                     {item.subtitle}
                   </p>
-                  <p className="mt-4 text-sm text-muted-foreground">
+                  <p className="mt-3 text-sm text-muted-foreground">
                     {item.description}
                   </p>
                 </div>
